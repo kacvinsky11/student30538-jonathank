@@ -1,0 +1,335 @@
+---
+title: "PSET 4"
+author: "Jonathan Kacvinsky"
+date: "02-07-2026"
+format: 
+  pdf:
+    include-in-header: 
+       text: |
+         \usepackage{fvextra}
+         \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}}
+include-before-body:
+  text: |
+    \RecustomVerbatimEnvironment{verbatim}{Verbatim}{
+      showspaces = false,
+      showtabs = false,
+      breaksymbolleft={},
+      breaklines
+    }
+output:
+  echo: false
+  eval: false
+---
+
+**Due 02/07 at 5:00PM Central.**
+
+"This submission is my work alone and complies with the 30538 integrity policy." Add your initials to indicate your agreement: JK
+
+### Github Classroom Assignment Setup and Submission Instructions
+
+1.  **Accepting and Setting up the PS4 Assignment Repository**
+    -   Each student must individually accept the repository for the problem set from Github Classroom ("ps4") -- <https://classroom.github.com/a/hWhtcHqH>
+        -   You will be prompted to select your cnetid from the list in order to link your Github account to your cnetid.
+        -   If you can't find your cnetid in the link above, click "continue to next step" and accept the assignment, then add your name, cnetid, and Github account to this Google Sheet and we will manually link it: <https://rb.gy/9u7fb6>
+    -   If you authenticated and linked your Github account to your device, you should be able to clone your PS4 assignment repository locally.
+    -   Contents of PS4 assignment repository:
+        -   `ps4_template.qmd`: this is the Quarto file with the template for the problem set. You will write your answers to the problem set here.
+2.  **Submission Process**:
+    -   Knit your completed solution `ps4.qmd` as a pdf `ps4.pdf`.
+        -   Your submission does not need runnable code. Instead, you will tell us either what code you ran or what output you got.
+    -   To submit, push `ps4.qmd` and `ps4.pdf` to your PS4 assignment repository. Confirm on Github.com that your work was successfully pushed.
+
+### Grading
+- You will be graded on what was last pushed to your PS4 assignment repository before the assignment deadline
+- Problem sets will be graded for completion as: {missing (0%); ✓- (incomplete, 50%); ✓+ (excellent, 100%)}
+    - The percent values assigned to each problem denote how long we estimate the problem will take as a share of total time spent on the problem set, not the points they are associated with.
+- In order for your submission to be considered complete, you need to push both your `ps4.qmd` and `ps4.pdf` to your repository. Submissions that do not include both files will automatically receive 50% credit.
+
+
+\newpage
+
+```{python}
+import pandas as pd
+import altair as alt
+import time
+import warnings 
+import requests
+from bs4 import BeautifulSoup
+from datetime import datetime
+from urllib.parse import urljoin
+
+warnings.filterwarnings('ignore')
+alt.renderers.enable("png")
+```
+
+
+## Step 1: Develop initial scraper and crawler
+
+
+```{python}
+url = 'https://oig.hhs.gov/fraud/enforcement/'
+response = requests.get(url)
+soup = BeautifulSoup(response.text, "lxml")
+
+hhs_enf = []
+
+grid_col_fill = soup.find_all("div", class_="grid-col-fill")
+only_h2 = None
+for div in grid_col_fill:
+    if div.find("h2"):
+        only_h2 = div
+        break
+"""finds correct grid_col_fill out of many"""
+enf_act = only_h2.find_all("h2")
+
+for category in enf_act:
+    
+    enf_category = category.get_text(strip=True)
+    ul = category.find_next("ul")
+
+    if not ul:
+        continue
+
+    for li in ul.find_all("li"):
+        """iterates and parses each li"""
+        link = li.find("a")
+        if not link:
+            continue
+        """necessary because not all li's contain a's"""
+
+        enf_title = link.get_text(strip=True)
+
+        date_tag = li.find("span")
+        enf_date = date_tag.get_text(strip=True) if date_tag else None
+        """only takes date tag if exists in li"""
+        
+        enf_url = link["href"]
+
+        hhs_enf.append({
+            "title": enf_title,
+            "date": enf_date,
+            "category": enf_category,
+            "link": enf_url
+        })
+
+hhs = pd.DataFrame(hhs_enf)
+hhs.head()
+
+```
+
+## Step 2: Making the scraper dynamic
+
+### 1. Turning the scraper into a function 
+
+* a. Pseudo-Code
+
+Define a function named dynamic_scraper with inputs (month, year, scrape)
+Create an indicator with an if function, where if scrape is false then a pop-up will tell us the "Function not run" then EXIT the function
+To ensure we restrict year to >= 2013 we write another if function where if year < 2013: message is printed "Year is less than 2013" then EXIT function
+Store scraped actions by initializing variables like current_year = year, current_month = month, today = datetime.today(), today_year = today.year, today_month = today.month, then store it in a list like hhs_crawl = []
+To enhance our for loop from step 1, we can use while to ensure we crawl up years with while (current_year < today_year): print (f"Scraping {current_year}-{current_month}")
+To get our url we can set url - f"url of year {current_year} and month = {current_month}" and use:
+response = requests.get(url)
+soup = BeautifulSoup(response.text, "lxml")
+from step 1.
+Continue with function from step 1 until we need to pause a second before crawling, using time.sleep(1)
+To increment by month we can use an if function with if current_month == 12: current_month = 1 current_year += 1 else: current_month += 1 to move up to the next year once we hit December
+Store into a dataframe then make into a csv using to_csv()
+
+
+* b. Create Dynamic Scraper
+
+```{python}
+
+def dynamic_scraper(year, month, scraper=True):
+
+    if not scraper:
+        print("Function not run")
+        return None
+    
+    original_url = "https://oig.hhs.gov/fraud/enforcement/"
+    page = 0
+    hhs_crawl = []
+
+    today = datetime(year, month, 1)
+
+
+    while True:
+        url = f"{original_url}?page={page}"
+        print(f"Currently Scraping Page {page}")
+        
+        response = requests.get(url)
+        soup = BeautifulSoup(response.text, "lxml")
+
+        grid_col_fill = soup.find_all("div", class_="grid-col-fill")
+        only_h2 = None
+
+        for div in grid_col_fill:
+            if div.find("h2"):
+                only_h2 = div
+                break
+        
+        if not only_h2:
+            print("No enforcement section found")
+            break
+        
+        enf_act = only_h2.find_all("h2")
+        page_items = 0
+
+        for category in enf_act:
+            enf_category = category.get_text(strip=True)
+            ul = category.find_next("ul")
+
+            if not ul:
+                continue
+
+            for li in ul.find_all("li"):
+                link = li.find("a")
+                if not link:
+                    continue
+
+                enf_title = link.get_text(strip=True)
+                url_crawl = urljoin(original_url, link["href"])
+
+                date_tag = li.find("span")
+                enf_date = date_tag.get_text(strip=True) if date_tag else None
+
+                try:
+                    action_date = datetime.strptime(enf_date, "%B %d, %Y")
+                except ValueError:
+                    continue
+
+                if action_date < today:
+                    continue
+
+                hhs_crawl.append({
+                    "title": enf_title,
+                    "date": action_date.strftime("%Y-%m-%d"),
+                    "category": enf_category,
+                    "link": url_crawl
+                })
+
+                page_items += 1
+
+        if page_items == 0:
+            print("No enforcement actions found")
+
+        page += 1
+        time.sleep(1)
+
+    hhs_dynamic = pd.DataFrame(hhs_crawl)
+    hhs_dynamic.to_csv(f"enforcement_actions_{year}_{month:02d}.csv", index=False)
+    return hhs_dynamic
+
+jan_2024 = dynamic_scraper(2024, 1, True)
+jan_2024.head()
+jan_2024
+```
+
+#520 entries, with the earliest date being January 27,2026
+
+
+* c. Test Your Code
+
+```{python}
+
+jan_2022 = dynamic_scraper(2022, 1, True)
+jan_2022.head()
+
+```
+
+## Step 3: Plot data based on scraped data
+
+### 1. Plot the number of enforcement actions over time
+
+```{python}
+enf_act_2022 = pd.read_csv("enforcement_actions_2022_01.csv")
+enf_act_2022["date"] = pd.to_datetime(enf_act_2022["date"])
+
+month_count = (enf_act_2022.assign(month=enf_act_2022["date"].dt.to_period("M"))
+               .groupby("month")
+               .size()
+               .reset_index(name="num_actions")
+)
+month_count["month"] = month_count["month"].dt.to_timestamp()
+
+graph_1 = (alt.Chart(month_count).mark_line(point=True).encode(
+    alt.X("month:T", title="Month", axis = alt.Axis(format="%b %Y", labelAngle=-70)
+    ),
+    alt.Y("num_actions:Q", title="Number of Enforcement Actions"
+    ),
+    tooltip=[
+        alt.Tooltip("month:T", title="Month", format="%B %Y"),
+        alt.Tooltip("num_actions:Q", title="Actions")
+    ]
+)
+.properties(
+    title = "HHS OIG Enforcement Actions Per Month Since January 2022",
+    width=500,
+    height=500
+)
+)
+
+graph_1
+```
+
+### 2. Plot the number of enforcement actions categorized:
+
+* based on "Criminal and Civil Actions" vs. "State Enforcement Agencies"
+
+```{python}
+month_type_count = (
+    enf_act_2022
+    .groupby(["month", "enforcement_type"])
+    .size()
+    .reset_index(name="num_actions")
+    )
+
+graph_2 = (alt.Chart(month_type_count).mark_line(point=True).encode(
+    alt.X("month:T", title="Month", axis = alt.Axis(format="%b %Y", labelAngle=-70)
+    ),
+    alt.Y("num_actions:Q", title="Number of Enforcement Actions"
+    ),
+    color=alt.Color("enforcement_type:N", title="Enforcement Types"
+    ),
+    tooltip=[
+        alt.Tooltip("month:T", title="Month", format="%B %Y"),
+        alt.Tooltip("num_actions:Q", title="Actions"),
+        alt.Tooltip("enforcement_type:N", title="Type")
+    ]
+)
+.properties(
+    title = "HHS OIG Enforcement Actions Per Month Since January 2022 by Type",
+    width=500,
+    height=500
+)
+)
+
+graph_2
+```
+
+* based on five topics
+
+```{python}
+graph_3 = (alt.Chart(month_topic_count).mark_line(point=True).encode(
+    alt.X("month:T", title="Month", axis = alt.Axis(format="%b %Y", labelAngle=-70)
+    ),
+    alt.Y("num_actions:Q", title="Number of Enforcement Actions"
+    ),
+    color=alt.Color("topic:N", title="Enforcement Topics"
+    ),
+    tooltip=[
+        alt.Tooltip("month:T", title="Month", format="%B %Y"),
+        alt.Tooltip("num_actions:Q", title="Actions"),
+        alt.Tooltip("enforcement_type:N", title="Type")
+    ]
+)
+.properties(
+    title = "HHS OIG Enforcement Actions Per Month Since January 2022 by Topic",
+    width=500,
+    height=500
+)
+)
+
+graph_3
+```
