@@ -1,0 +1,55 @@
+---
+title: "Kickoff - lecture 3"
+author: "Peter Ganong and Maggie Shi"
+date-format: January 12/13, 2026
+format: 
+    revealjs:
+        slide-number: true
+        show-slide-number: all
+        self-contained: true
+---
+
+# PS1 submitted  {style="font-size: 0.8em"}
+* Congratulations!
+* Hiccups are normal. Learning to program is really frustrating at times. 
+* You can do it! Hundreds of Harris students have completed this sequence and gone on to jobs where they regularly use these skills.
+* One enduring lesson for all programming and technology work is to "fail fast" or "test early and often". If a new piece of tech has been introduced, try it out right away (even with a tiny simple commit) just to learn the mechanics or see where you get stuck.
+
+# What's left for PS1 {style="font-size: 0.8em"}
+* Be sure to review the solutions
+    * Would love [hear about AI TA](https://edstem.org/us/courses/89578/discussion/7498883) and in what ways it is / is not useful at giving feedback
+    * In-lab assessment (which builds on PS1) on Mon/Tue. See instructions in Canvas announcement for logistical details. **No Codespace** this week.
+* Social/professional norms for Ed.
+    * Give TAs the same dignity they give you. This norm was followed in most threads. However, in a few places a student asked a question, a TA wrote back thoughtfully, and the student never wrote back :-(
+* In-lab assessment Mon/Tue afternoon
+    * We sent instructions last Friday on Canvas - please review them carefully.
+    * Bring your laptop, phone, UChicago ID
+
+# From syllabus
+Reminders of material on syllabus/intro slides that might have been missed
+
+* The teaching staff will respond to questions 9AM-5PM Monday-Friday and 9AM-12PM Saturday.
+* Email discouraged. Will in most cases get a response: “send a PM in Ed”. However, if you have a confidential matter which cannot be shared with the teaching staff, then please email `ganong@uchicago.edu` or `m.shi@uchicago.edu` w “30538 confidential”.
+
+
+# Looking forward
+* Expect week 2 to be much more representative in terms of type of work and workload. We think pset will take longer than last week's, but topic should be more familiar (back in Python)
+* PS2 is live
+* Final project guidelines are live
+    * on student repo under `final_project`
+    * Week 3 has no pset. Instead, declare group and submit proposal (ungraded, due Jan 24)
+
+# MUD card feedback
+* Two MUD cards asking to speak slower (I will try!) and to repeat myself (I am glad to do this... if you ask)
+* Some slides in git PDF cut off
+
+# MUD card questions
+* Difference between fast-forward merge and three-way merge (draw at board)
+* "I thought commits override previous versions... so how does a merge conflict arise?" (draw answer at board)
+* Discussion q -- can a merge conflict ever occur in the context of a fast-forward merge? why or why not?
+* (if time) show merge conflict example from the weekend
+
+# Want to review these slides more slowly?
+They are saved to the student repo under `kickoff`
+
+Looking for minilesson videos? They are [here](https://uchicago.app.box.com/folder/359280505901?s=zdgwdq3hrg0d888pwexrjb9matlaocq3) and linked from the student repo's home page

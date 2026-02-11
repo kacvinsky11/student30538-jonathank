@@ -1,0 +1,36 @@
+---
+title: "Visualization - Intro (Lecture 2)"
+author: "Peter Ganong and Maggie Shi"
+date: today
+date-format: long
+format: 
+  revealjs:
+    slide-number: true
+    show-slide-number: all
+    css: custom-styles.css
+    self-contained: true
+---
+
+
+## Making `precipitation` ordinal: solution {background-color="aliceblue"}
+```{.python}
+import altair as alt
+from vega_datasets import data as vega_data
+seattle = vega_data.seattle_weather()
+alt.Chart(seattle).mark_bar().encode(
+    alt.X('month(date):O', title = "Month"),
+    alt.Y('average(precipitation):O', title = "Average rainfall (in.)")
+)
+```
+
+```{python}
+import altair as alt
+from vega_datasets import data as vega_data
+seattle = vega_data.seattle_weather()
+alt.Chart(seattle).mark_bar().encode(
+    alt.X('month(date):O', title = "Month"),
+    alt.Y('average(precipitation):O', title = "Average rainfall (in.)")
+)
+```
+
+`altair` now orders `precipitation` *alphabetically*

@@ -1,0 +1,1076 @@
+---
+title: "Visualization (Marks and Encoding)"
+author: "Peter Ganong and Maggie Shi"
+date: January 14, 2026
+date-format: long
+format: 
+  revealjs:
+    slide-number: true
+    show-slide-number: all
+    self-contained: true
+---
+
+# Roadmap of the lecture
+- Data for this lecture
+- Fundamentals of data visualization
+    - Data types: what information is in my data?
+    - Encoding and marks: how do I want to convey this information?
+- Applying this in `altair`
+
+
+
+# Global Health Data
+
+## Introducing global health data
+
+* Throughout the rest of lecture, we will be visualizing global health and population data for a number of countries, over the time period of 1955 to 2005. 
+
+* The data was collected by the [Gapminder Foundation](https://www.gapminder.org/) and shared in [Hans Rosling's fantastic TED talk](https://www.youtube.com/watch?v=hVimVzgtD6w). 
+
+* Roadmap: load data and review first four rows
+
+## Load data
+Let's first load the dataset from the [vega-datasets](https://github.com/vega/vega-datasets) collection into a Pandas data frame.
+
+```{.python}
+import altair as alt
+from vega_datasets import data as vega_data
+data = vega_data.gapminder()
+data["cluster_name"] = data["cluster"].map({
+    0: "South Asia",
+    1: "Western Europe",
+    2: "Sub-Saharan Africa",
+    3: "Americas & Anglos",
+    4: "East Asia",
+    5: "Middle East & North Africa"
+})
+```
+
+```{python}
+import altair as alt
+from vega_datasets import data as vega_data
+data = vega_data.gapminder()
+data["cluster_name"] = data["cluster"].map({
+    0: "South Asia & Africa",
+    1: "Western Europe",
+    2: "Sub-Saharan Africa",
+    3: "Americas & Anglos",
+    4: "East Asia",
+    5: "Middle East & North Africa"
+})
+```
+
+*(Note: we deviate from Heer et al. do some data cleaning to fix a poorly defined variable, `cluster`)*
+
+## Load data
+```{.python}
+data.head(4)
+```
+
+```{python}
+data.head(4)
+```
+
+
+## data summary
+For each `country` and `year` (in 5-year intervals), we have:
+
+* `fertility`: fertility in terms of the number of children per woman 
+* `life_expect`: life expectancy in years
+* `pop`: total population
+* `cluster_name`: region
+
+
+# Fundamentals of visualization: Data Types
+
+## Data types: intro and roadmap
+
+Core **data types**, as recognized by `altair`:
+
+- `'N'`: *nominal* type 
+- `'O'`: *ordinal* type 
+- `'Q'`: *quantitative* type 
+- `'T'`: *temporal* type 
+
+
+## Nominal (N)
+* *Nominal* data consists of **unordered** category names. 
+    * Also called *categorical* data 
+* **Questions**: *Is value A the same or different from value B? (A = B)*?
+* **Answers**: conclusion we should be able to make is whether the values are the same or different
+* **In `gapminder` data**: the `country` field is `N`ominal
+
+
+## Ordinal (O)
+
+* *Ordinal* data consist of values that have a specific **rank-ordering**.
+    * Note: ordinal does not necessarily mean numerical. E.g., survey results: "Good", "Ok", "Bad"
+* **Questions**: *Does value A come before or after value B? (A < B)*
+* **Answers**: statements like “A is less than B” or “A is greater than B”.
+* **In `gapminder` data**:  `year` field can be treated as `O`rdinal.
+    
+
+## Quantitative (Q) {style="font-size: 0.8em"}
+
+* *Quantitative* data measures numerical differences among values. Two types: *interval* and *ratio*
+    * *Interval* data 
+        * Questions: *what is the difference between value A from value B?*
+        * Answers: “A is 12 units away from B”
+    * *Ratio* data 
+        * Questions: *How many are there of value A?*, *Value A is what proportion of value B? (A / B)*
+        * Answers: "how many babies per parent?", "A is 10% of B” 
+
+
+## Quantitative (Q), continued
+
+* Key difference between *interval* and *ratio*: 0 is essential for ratio, but not interval data
+* *(Note: we are following Heer et al. in use of the term "ratio," recognizing that they mean it as encompassing more than just ratios)*
+
+## Quantitative (Q), continued
+* Rule of thumb for visualization: show 0s for ratio data, but not for interval (typically)
+    * `altair` does not make a distinction between interval and ratio types
+    * So it will be up to you as the analyst to decide when this is appropriate!
+
+
+## Quantitative (Q), continued
+Discussion questions
+
+- Why is it so important to include zeros for ratio data? 
+- Can you give an example where omitting zeros on the plot would lead the reader to misleading conclusions? 
+
+::: {.notes }
+
+Answer: one example could be looking at healthcare spending by income. Say that the threshold for seeking care differs by income, with low-income folks having a higher threshold. Low-income folks are more likely to spend nothing, but conditional on spending >$0, have similar healthcare costs as high-income folks. If you ignored 0s, it would look like low and high-income people have similar total healthcare spending. But they actually have lower!
+
+::: 
+
+## Quantitative (Q), continued
+* **In `gapminder` data**: `year` is a quantitative *interval* field 
+    * (depending on whose history of the world you prefer, there are many choices for the year "zero")
+* Whereas `fertility` and `life_expect` are quantitative *ratio* fields -- zero is meaningful for calculating proportions
+
+
+
+
+## Temporal (T)
+
+* *Temporal* values measure time points or intervals. 
+* Special case of quantitative values (timestamps) with rich semantics and conventions (i.e., the [Gregorian calendar](https://en.wikipedia.org/wiki/Gregorian_calendar)). 
+* Example temporal values include date strings such as `“2019-01-04”` and `“Jan 04 2019”` as well as durations `5 days`
+* Also standardized date-times such as the [ISO date-time format](https://en.wikipedia.org/wiki/ISO_8601): `“2019-01-04T17:50:35.643Z”`
+* There are no temporal values in our global development dataset above, as the `year` field is simply encoded as an integer. 
+
+
+
+## Discussion question I
+
+What are examples of variables that are: 
+
+* `N`ominal
+* `O`rdinal
+* `Q`uantitative
+
+Let's try to come up with at least three examples of each. For each example, state a sentence about the kind of question the variable could answer or comparison you can make.
+
+::: {.notes }
+Solution: the hard one here is nominal. examples can be geographic units, different types of health services, different types of housing 
+:::
+
+## Discussion question II
+
+Suppose we have a dataset of ages (10 years old, 20 years old, 10 years old, 30 years old). How could we reconfigure the age data into:
+
+* `N`ominal type?
+* `O`rdinal type?
+* `Q`uantitative type?
+    * Interval?
+    * Ratio?
+
+
+::: {.notes }
+
+* nominal: split into adult vs non-adult
+* ordinal: young, middle-aged, and old
+* quantitative: 
+    * interval: years until turn 18
+    * ratio: it's already ratio!
+
+:::
+
+## Add data types to last lecture's plot
+```{.python code-line-numbers="3-4"}
+seattle = vega_data.seattle_weather()
+alt.Chart(seattle).mark_bar().encode(
+    alt.X('month(date):O', title = "Month"),
+    alt.Y('average(precipitation):Q', title = "Average rainfall (in.)")
+)
+```
+
+```{python}
+seattle = vega_data.seattle_weather()
+alt.Chart(seattle).mark_bar().encode(
+    alt.X('month(date):O', title = "Month"),
+    alt.Y('average(precipitation):Q', title = "Average rainfall (in.)")
+).properties(
+    width=300,
+    height=150)
+```
+
+* Month: `O`rdinal
+* Average rainfall: `Q`uantitative
+
+
+
+
+## Do-pair-share {background-color="aliceblue"}
+
+* What happens when you make `precipitation` `O`rdinal?
+* What rank-ordering does `altair` assume when you declare the data ordinal?
+
+Starter code: `viz_2_marksencoding/viz_2_marksencoding_dps.qmd`
+
+```{.python}
+seattle = vega_data.seattle_weather()
+alt.Chart(seattle).mark_bar().encode(
+    alt.X('month(date):O', title = "Month"),
+    alt.Y('average(precipitation):Q', title = "Average rainfall (in.)")
+)
+```
+
+<!-- 
+```{python}
+seattle = vega_data.seattle_weather()
+alt.Chart(seattle).mark_bar().encode(
+    alt.X('month(date):O', title = "Month"),
+    alt.Y('average(precipitation):Q', title = "Average rainfall (in.)")
+)
+``` 
+-->
+
+
+
+## Data types: summary
+
+A single data series can have multiple meanings depending on data type
+
+- `'N'`: a *nominal* type (unordered, categorical data)
+- `'O'`: *ordinal* type (rank-ordered data)
+- `'Q'`: *quantitative* type (numerical data with meaningful magnitudes)
+- `'T'`: *temporal* type (date/time data)
+
+Explicitly specify the data type so that `altair` knows how to interpret each variable
+
+
+
+# Fundamentals of visualization: Encodings
+## Visual encodings: roadmap
+* Introduce types of visual encodings and rank them by their effectiveness
+* More on color
+
+## Citing our sources
+- Schwabish: "Better Data Visualizations" [(link to purchase)](https://cup.columbia.edu/book/better-data-visualizations/9780231193115/)
+- Healy: "Data Visualization" [(link to full text)](https://socviz.co/)
+- Munzner. Visualization Analysis and Design. [(slides and video)](https://www.cs.ubc.ca/~tmm/vadbook/)
+- Cleveland and McGill [(link)](https://www.jstor.org/stable/2288400)
+
+## Recall: visualization guidelines
+1. All axes and units are properly labeled and legible
+2. No words or data points are cut off in your final output
+3. **Encodings should be sensible/appropriate** -- *what does this mean?*
+
+
+## Visual encodings
+- **Visual encodings** map data variables to visual properties of a chart
+- The encoding you choose should be appropriate for the data type and conclusions you want audience to draw
+    - Good encodings reveal patterns and makes clear what comparison can be made
+    - Bad encodings obfuscate and can be misleading
+
+
+## Encodings: ordered attributes
+![](pictures/munzer_fig5.6_1.png){fig-width=50%, fig-align="center"}
+
+Source: Munzner (2014), Figure 5.6
+
+"Effectiveness" is measured (experimentally by Cleveland and McGill) by **perceptual accuracy**: how well can people judge numeric differences when represented by each encoding
+
+
+## Encodings: unordered attributes
+
+![](pictures/munzer_fig5.6_2.png){fig-width=60%, fig-align="center"}
+
+
+Source: Munzner (2014), Figure 5.6
+
+## Choosing an encoding 
+1. What type of data do I have?
+    - Nominal, ordinal, quantitative or temporal?
+    - Are the variables ordered or unordered? 
+2. What do I want the viewer to conclude?
+    - Are they comparing values? Estimating magnitudes? Spotting patterns?
+    - How important is **perceptual accuracy**? E.g., is it enough to know *A > B*, or do I need to know *A == 3 x B*?
+
+## Encodings by data type: nominal {style="font-size: 0.8em"}
+- **Questions**: *Is value A the same or different than value B? (A = B)*
+- **Perceptual accuracy**: viewer should be able to easily differentiate between categories
+- **Typical encodings**: position, color hue (blue, red, green), and shape
+    - Importantly, encoding should *not* imply a rank-ordering
+    - Size/length would be not be appropriate
+    - *Position* sometimes implies a rank-ordering when we don't mean it
+
+## Encodings by data type: ordinal
+- **Questions**: *Does value A come before or after value B? (A < B)*
+- **Perceptual accuracy**: viewer should be able to detect rank-ordering
+- **Typical encodings**: position, size, and color luminance/saturation (light vs. dark) 
+
+## Encodings by data type: quantitative
+- **Questions**: *What is the difference between value A from value B? (A - B)*? *value A is what proportion of value B? (A / B)*?
+- **Perceptual accuracy**: viewer should be able to detect relative magnitudes
+- **Typical encodings**: position, length, size, and color luminance/saturation (light vs. dark) 
+    - Additionally, scale should go to 0 for ratio data
+
+## Can we rely on `altair`'s defaults?
+- Even if you don't specify an encoding, `altair` will pick a default one
+- Sometimes this is innocuous. E.g., it has to pick a default color to plot graphs in
+- But sometimes the default encoding it chooses:
+    - Implies order when there isn't one, or vice versa
+    - Is a "wasted" opportunity to encode in a more informative way
+
+## Example: using `altair`'s defaults
+```{.python style="font-size: 0.6em"}
+df_latest = data[data['year'] == data['year'].max()]
+
+alt.Chart(df_latest).mark_bar().encode(
+    alt.X('country:N', title='Country'),
+    alt.Y('life_expect:Q', title='Life Expectancy')
+)
+```
+
+
+```{python}
+df_latest = data[data['year'] == data['year'].max()]
+
+alt.Chart(df_latest).mark_bar().encode(
+    alt.X('country:N', sort='ascending', title='Country'),
+    alt.Y('life_expect:Q', title='Life Expectancy')
+).properties(
+    width=700,
+    height=200)
+```
+
+ `altair` encodes positions for `country` _alphabetically_. For what kinds of questions would this be useful vs. not useful? 
+
+
+::: {.notes }
+
+useful if viewer has a country in mind and wants to find out the life expectancy. Not useful for answering the question, which country has the highest life expectancy?
+
+:::
+
+## Example: using `altair`'s defaults
+```{.python style="font-size: 0.6em" code-line-numbers="|3"}
+alt.Chart(df_latest).mark_bar().encode(
+    x=alt.X('country:N',
+            =alt.EncodingSortField(field='life_expect', order='descending'),
+            title='Country'),
+    y=alt.Y('life_expect:Q', title='Life Expectancy')
+)
+```
+
+```{python}
+alt.Chart(df_latest).mark_bar().encode(
+    x=alt.X('country:N',
+            sort=alt.EncodingSortField(field='life_expect', order='descending'),
+            title='Country'),
+    y=alt.Y('life_expect:Q', title='Life Expectancy')
+).properties(
+    width=700,
+    height=200)
+```
+To highlight differences or relative life expectancy, sorting by `life_expect` makes the x-axis encoding more useful
+
+## More depth on color
+
+By `color`, we mean both **luminance/saturation** (light/dark) and **hue**
+
+Why choose color deliberately?
+
+* Using any software's default color palette is kind of like using comic sans font on a resume
+* Choosing the "right" colors will make it easier for you to convey meaning
+* Use [colorbrewer2.org](https://colorbrewer2.org) to choose your color palettes. Click through to site. Options include subsetting to colors that are colorblind safe and black and white printer safe
+
+## Color coordination... not just for clothing
+
+* Within a project 
+    * You rarely produce a single plot in isolation. Usually it's part of an article, a website, etc. Use coordination as a communication tool
+    * Use same color for a variable across multiple figures (e.g. green for income, blue for consumption)
+    * If you are plotting data for the same groups across multiple figures, might use the same color for each group (e.g. UChicago always maroon, Northwestern as purple)
+
+## Color coordination... not just for clothing
+* Across projects
+    * Many organizations have official palettes and plot templates. UChicago's is [here](https://creative.uchicago.edu/color-system/). Good to ask if you are working for a big org if they have one. 
+    
+## Color palettes and their use cases
+Altair has many pre-set [color schemes](https://vega.github.io/vega/docs/schemes/): 
+
+| Palette type | Use case | 
+| --- | --- | 
+| Categorical | `Nominal` | 
+| Sequential Single-Hue |`Ordinal` or `Quantitative` | 
+| Sequential Multi-Hue | Higher contrast, but harder to judge quantitative proximity |
+| Diverging | Use if there is a midpoint (e.g. voting for `redblue`) |
+
+::: {.notes }
+Flip back and forth between each of these palette types and the examples on the website. Be sure to click "View discrete" as well
+::: 
+
+## Visual encoding: summary
+
+* Several ways to encode information visually
+* How you encode should be informed by
+    - Data type
+    - If you want to convey order/ranking
+    - What questions/answers you want plot to deliver
+* Color is one of the easiest ways to convey meaning
+
+# Encoding channels in `altair`
+
+## Encoding channels: roadmap
+
+- `x`, `y`
+    - Aside: whether to include 0
+- `size`
+- `color`
+- `opacity`
+- `shape`
+- `column`, `row`
+
+Throughout, we will highlight examples of ["bad"]{style="color:red;"} uses of encodings and marks.
+
+## X
+
+```{.python }
+data2000 = data.loc[data['year'] == 2000] #one year is more manageable
+
+alt.Chart(data2000).mark_point().encode(
+    alt.X('fertility:Q', title = "Fertility (children per woman)")
+)
+```
+
+```{python}
+data2000 = data.loc[data['year'] == 2000] #one year is more manageable
+alt.Chart(data2000).mark_point().encode(
+    alt.X('fertility:Q', title = "Fertility (children per woman)")
+)
+```
+
+## X + Y 
+```{.python}
+alt.Chart(data2000).mark_point().encode(
+    alt.X('fertility:Q', title = "Fertility (children per woman)"),
+    alt.Y('cluster_name:N', title = "Regional Cluster")
+)
+```
+
+```{python}
+alt.Chart(data2000).mark_point().encode(
+    alt.X('fertility:Q', title = "Fertility (children per woman)"),
+    alt.Y('cluster_name:N', title = "Regional Cluster")
+)
+```
+
+
+::: {.notes } 
+solution: 
+* treating fertility as a categorical variable means you get a separate
+category on the x-axis for every single value of fertility
+:::
+
+
+## Requiring 0 on axis range vs. not
+```{.python style="font-size: 0.6em" code-line-numbers="|2-4|1-8|"}
+default_with_zero = alt.Chart(data2000).mark_point().encode(
+    alt.X('fertility:Q', title = "Fertility (children per woman)"),
+    alt.Y('life_expect:Q',title = "Life expectancy")
+)
+zero_excluded = alt.Chart(data2000).mark_point().encode(
+    alt.X('fertility:Q',  scale=alt.Scale(zero=False), title = "Fertility (children per woman)"),
+    alt.Y('life_expect:Q', scale=alt.Scale(zero=False), title = "Life expectancy")
+)
+default_with_zero | zero_excluded
+```
+
+```{python}
+default_with_zero = alt.Chart(data2000).mark_point().encode(
+    alt.X('fertility:Q', title = "Fertility (children per woman)"),
+    alt.Y('life_expect:Q',title = "Life expectancy")
+)
+zero_excluded = alt.Chart(data2000).mark_point().encode(
+    alt.X('fertility:Q',  scale=alt.Scale(zero=False), title = "Fertility (children per woman)"),
+    alt.Y('life_expect:Q', scale=alt.Scale(zero=False), title = "Life expectancy")
+)
+default_with_zero | zero_excluded
+```
+
+Discussion question: which plot do you prefer (and why?)
+
+::: {.notes }
+zero included is better if you want the reader to think about the variable carefully and what it means
+
+zero excluded is better if you just want to compare countries as high vs low
+:::
+
+## `size`
+```{.python code-line-numbers="4|"}
+alt.Chart(data2000).mark_point().encode(
+    alt.X('fertility:Q', title = "Fertility (children per woman)"),
+    alt.Y('life_expect:Q',title = "Life expectancy"),
+    alt.Size('pop:Q', title = "Population")
+)
+```
+
+```{python}
+alt.Chart(data2000).mark_point().encode(
+    alt.X('fertility:Q', title = "Fertility (children per woman)"),
+    alt.Y('life_expect:Q',title = "Life expectancy"),
+    alt.Size('pop:Q', title = "Population")
+)
+```
+
+## Bad use of `size`
+```{.python code-line-numbers="2,4|"}
+alt.Chart(data2000).mark_point().encode(
+    alt.X('fertility:Q', title = "Fertility (children per woman)"),
+    alt.Y('life_expect:Q',title = "Life expectancy"),
+    alt.Size('fertility:Q', title = "Fertility (children per woman)")
+)
+```
+
+```{python}
+alt.Chart(data2000).mark_point().encode(
+     alt.X('fertility:Q', title = "Fertility (children per woman)"),
+    alt.Y('life_expect:Q',title = "Life expectancy"),
+    alt.Size('fertility:Q', title = "Fertility (children per woman)")
+).properties(
+    width=200,
+    height=200
+)
+```
+
+["Bad"]{style="color:red;"} use of encodings: redundant encodings for `fertility`: `X` and `size`. `altair`'s grammar of graphics makes this very obvious.
+
+## `size` with 1000 pixels for largest dot
+```{.python  code-line-numbers="4|"}
+alt.Chart(data2000).mark_point().encode(
+    alt.X('fertility:Q', title = "Fertility (children per woman)"),
+    alt.Y('life_expect:Q',title = "Life expectancy"),
+    alt.Size('pop:Q', scale=alt.Scale(range=[0,1000]))
+)
+```
+
+```{python}
+alt.Chart(data2000).mark_point().encode(
+    alt.X('fertility:Q', title = "Fertility (children per woman)"),
+    alt.Y('life_expect:Q',title = "Life expectancy"),
+    alt.Size('pop:Q', scale=alt.Scale(range=[0,1000]), title = "Population")
+).properties(
+    width=200,
+    height=200
+)
+```
+
+Note: `alt.Scale(range=[0,1000])` indicates the *visual* size of the marks (in pixels), and is not in reference to values in the underlying data
+
+<!-- PG to SSS I suggest deleting this slide on alt.Scale(range=[0,1000]). Or if we do keep it then more explanation is needed-->
+
+## `shape` 
+```{.python  code-line-numbers="4|"}
+alt.Chart(data2000).mark_point().encode(
+    alt.X('fertility:Q', title = "Fertility (children per woman)"),
+    alt.Y('life_expect:Q', scale=alt.Scale(zero=False), title = "Life expectancy"),
+    alt.Shape('cluster_name:N', title = "Regional Cluster")
+)
+```
+
+```{python}
+alt.Chart(data2000).mark_point().encode(
+    alt.X('fertility:Q', title = "Fertility (children per woman)"),
+    alt.Y('life_expect:Q', scale=alt.Scale(zero=False), title = "Life expectancy"),
+    alt.Shape('cluster_name:N', title = "Regional Cluster")
+).properties(
+    width=200,
+    height=200
+)
+```
+
+Discussion: thoughts on how well `alt.Shape` communicates `cluster_name`?
+
+::: {.notes }
+Answer: not very well. You have to keep going back and forth from the legend to the graph. This is why it is very low in the ranking for unordered data. Another example of "bad" use of encoding because it requires a lot of unnecessary effort for the reader.
+:::
+
+## add `color`
+```{.python  code-line-numbers="1,5|"}
+alt.Chart(data2000).mark_point(filled=True).encode(
+   alt.X('fertility:Q', title = "Fertility (children per woman)"),
+    alt.Y('life_expect:Q',title = "Life expectancy"),
+    alt.Size('pop:Q', scale=alt.Scale(range=[0,1000]), title = "Population"),
+    alt.Color('cluster_name:N', title = "Regional Cluster")
+)
+```
+
+```{python}
+alt.Chart(data2000).mark_point(filled=True).encode(
+   alt.X('fertility:Q', title = "Fertility (children per woman)"),
+    alt.Y('life_expect:Q',title = "Life expectancy"),
+    alt.Size('pop:Q', scale=alt.Scale(range=[0,1000]), title = "Population"),
+    alt.Color('cluster_name:N', title = "Regional Cluster")
+)
+```
+
+
+
+## `opacity`
+```{.python  code-line-numbers="6|"}
+alt.Chart(data2000).mark_point(filled=True).encode(
+    alt.X('fertility:Q', title = "Fertility (children per woman)"),
+    alt.Y('life_expect:Q', title = "Life expectancy"),
+    alt.Size('pop:Q', scale=alt.Scale(range=[0,1000]), title = "Population"),
+    alt.Color('cluster_name:N', title = "Regional Cluster"),
+    alt.OpacityValue(0.2)
+)
+```
+
+<!-- PG to SSS I skipped this slide. Without rendering a plot to show opacity there is no clear lesson. Opacity can easily be explained instead on an upcoming slide-->
+
+Question: are we encoding anything here? 
+
+::: {.notes }
+Answer: no - opacity is not tied to any variable!
+
+This is *not necessarily* a bad use of encoding because it does not confuse the reader/make it more complicated to interpret. So it is really just an aesthetic choice.
+:::
+
+## `column` 
+
+<div style="font-size:75%">
+```{.python code-line-numbers="5,7|"}
+alt.Chart(data2000).mark_point(filled=True).encode(
+    alt.X('fertility:Q', title = "Fertility (children per woman)"),
+    alt.Y('life_expect:Q', title = "Life expectancy"),
+    alt.Size('pop:Q', scale=alt.Scale(range=[0,1000]), title = "Population")
+    alt.Color('cluster_name:N', title = "Regional Cluster"),
+    alt.OpacityValue(0.5),
+    alt.Column('cluster_name:N', title = "Regional Cluster")
+)
+```
+
+```{python}
+alt.Chart(data2000).mark_point(filled=True).encode(
+    alt.X('fertility:Q', title = "Fertility"),
+    alt.Y('life_expect:Q', title = "Life expectancy"),
+    alt.Size('pop:Q', scale=alt.Scale(range=[0,1000]), title = "Population"),
+   alt.Color('cluster_name:N', title = "Regional Cluster"),
+    alt.OpacityValue(0.5),
+    alt.Column('cluster_name:N', title = "Regional Cluster")
+).properties(
+    width=130,
+    height=130
+)
+```
+
+["Bad"]{style="color:red;"} use of encodings: now the `Color` and `Column` encodings are redundant. It's pretty, but could be confusing!
+
+
+</div>
+
+## Cleaning up the graph
+```{.python  code-line-numbers="|5|8|"}
+alt.Chart(data2000).mark_point(filled=True).encode(
+    alt.X('fertility:Q', title = "Fertility"),
+    alt.Y('life_expect:Q', title = "Life expectancy"),
+    alt.Size('pop:Q', scale=alt.Scale(range=[0,1000]),
+             legend=alt.Legend(orient='bottom', titleOrient='left'),
+             title = "Population"),
+    alt.OpacityValue(0.5),
+    alt.Column('cluster_name:N', title= "Regional Cluster"))
+```
+
+```{python}
+alt.Chart(data2000).mark_point(filled=True).encode(
+    alt.X('fertility:Q', title = "Fertility (children per woman)"),
+    alt.Y('life_expect:Q', title = "Life expectancy"),
+    alt.Size('pop:Q', scale=alt.Scale(range=[0,1000]),
+             legend=alt.Legend(orient='bottom', titleOrient='left'),
+             title = "Population"),
+    alt.OpacityValue(0.5),
+    alt.Column('cluster_name:N', title= "Regional Cluster"),
+).properties(width=135, height=135)
+```
+
+We can clean it up by eliminating superfluous encodings and moving legend
+
+
+## Encoding channels: summary {style="font-size: 0.8em"}
+
+- `x`: Horizontal (x-axis) position of the mark.
+- `y`: Vertical (y-axis) position of the mark.
+- `size`: Size of the mark. May correspond to area or length, depending on the mark type.
+- `color`: Mark color, specified as a [legal CSS color](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value).
+- `opacity`: Mark opacity, ranging from 0 (fully transparent) to 1 (fully opaque).
+- `shape`: Plotting symbol shape for `point` marks.
+- `column`: Facet the data into horizontally-aligned subplots.
+- `row`: Facet the data into vertically-aligned subplots.
+
+# Graphical marks in `altair`
+
+## Graphical marks: roadmap
+
+So far we have seen `mark_point()` and `mark_bar()`. Now will cover
+
+- `mark_circle()`	
+- `mark_tick()` 
+- `mark_bar()`
+- `mark_line()`  
+- `mark_area()` 
+
+
+
+## `mark_circle()` wrapper for `mark_point(filled=True)`
+```{.python  code-line-numbers="1|"}
+alt.Chart(data2000).mark_circle(size=100).encode(
+    alt.X('fertility:Q', title = "Fertility (children per woman)"),
+    alt.Y('life_expect:Q', scale=alt.Scale(zero=False), title = "Life expectancy")
+)
+```
+```{python}
+alt.Chart(data2000).mark_circle(size=100).encode(
+    alt.X('fertility:Q', title = "Fertility (children per woman)"),
+    alt.Y('life_expect:Q', scale=alt.Scale(zero=False), title = "Life expectancy")
+)
+```
+
+## `mark_tick()`
+```{.python}
+alt.Chart(data2000).mark_tick().encode(
+    alt.X('fertility:Q', title = "Fertility (children per woman)"),
+    alt.Y('cluster_name:N', title = "Regional Cluster")
+)
+```
+
+```{python}
+alt.Chart(data2000).mark_tick().encode(
+    alt.X('fertility:Q', title = "Fertility (children per woman)"),
+    alt.Y('cluster_name:N', title = "Regional Cluster")
+)
+```
+
+Useful for comparing values along a single dimension with minimal overlap. A *dot plot* drawn with tick marks is sometimes referred to as a *strip plot*.
+
+## `X` and `X2`
+
+```{.python}
+alt.Chart(data2000).mark_bar().encode(
+    alt.X('min(life_expect):Q', title = "Life expectancy"),
+    alt.X2('max(life_expect):Q'),
+    alt.Y('cluster_name:N', title = 'Regional Cluster')
+)
+```
+
+```{python}
+alt.Chart(data2000).mark_bar().encode(
+    alt.X('min(life_expect):Q', title = "Life expectancy"),
+    alt.X2('max(life_expect):Q'),
+    alt.Y('cluster_name:N', title = 'Regional Cluster')
+)
+```
+
+
+
+
+## `mark_bar()` {style="font-size: 0.8em"}
+
+```{.python}
+alt.Chart(data2000).mark_bar().encode(
+    alt.X('country:N', title = "Country"),
+    alt.Y('pop:Q', title = "Population")
+)
+```
+
+```{python}
+alt.Chart(data2000).mark_bar().encode(
+    alt.X('country:N'),
+    alt.Y('pop:Q', title = "Population")
+)
+```
+
+["Bad"]{style="color:red;"} use of encoding: here is another instance of a "wasted" opportunity to encode something useful on the x-axis
+
+
+## `alt.Color()` for a stacked bar plot {style="font-size: 0.8em"}
+
+```{.python  code-line-numbers="|4"}
+alt.Chart(data2000).mark_bar().encode(
+    alt.X('cluster_name:N', title = "Regional Cluster"),
+    alt.Y('pop:Q', title = "Population"),
+    alt.Color('country:N', title = "Country") 
+)
+```
+
+```{python}
+alt.Chart(data2000).mark_bar().encode(
+    alt.X('cluster_name:N', title = "Regional Cluster"),
+    alt.Y('pop:Q', title = "Population"),
+    alt.Color('country:N', title = "Country") 
+).properties(
+    width=130,
+    height=200
+)
+```
+
+["Bad"]{style="color:red;"} use of color -- way too many categories! Requires reader to move back and forth between graph and legend to parse.
+
+
+
+## `mark_line()` 
+```{.python}
+data_cluster2 = data.loc[data['cluster'] == 2] #one cluster is more manageable
+alt.Chart(data_cluster2).mark_line().encode(
+    alt.X('year:O', title = "Year"),
+    alt.Y('fertility:Q', title = "Fertility (children per woman)"),
+    alt.Color('country:N', title = "Country")
+)
+```
+
+```{python}
+data_cluster2 = data.loc[data['cluster'] == 2] #one cluster is more manageable
+alt.Chart(data_cluster2).mark_line().encode(
+    alt.X('year:O', title = "Year"),
+    alt.Y('fertility:Q', title = "Fertility (children per woman)"),
+    alt.Color('country:N', title = "Country")
+).properties(
+    width=400
+)
+```
+
+<!--## `Tooltip()`
+
+Textbook advocates for having a plot with many more lines, no legend, and instead using `alt.Tooltip('country:N')`. This is technologically feasible but a bad idea. (Discuss: why?)
+<!-- ZZZ Solution: plot is still illegible! too many lines. In addition, the tooltip is stupid, it only gives you a name when you mouse over the invisible dot, not when you mouse over the line-->
+<!-- <div style="font-size:75%">
+```{.python}
+alt.Chart(data).mark_line().encode(
+    alt.X('year:O'),
+    alt.Y('fertility:Q'),
+    alt.Color('country:N', legend=None),
+    alt.Tooltip('country:N')
+)
+```
+
+```{python}
+alt.Chart(data).mark_line().encode(
+    alt.X('year:O'),
+    alt.Y('fertility:Q'),
+    alt.Color('country:N', legend=None),
+    alt.Tooltip('country:N')
+).properties(
+    width=400
+)
+```
+</div> -->
+ 
+
+
+## `mark_area()`
+
+```{.python}
+dataUS = data.loc[data['country'] == 'United States']
+alt.Chart(dataUS).mark_area().encode(
+    alt.X('year:O', title = "Year"),
+    alt.Y('fertility:Q', title = "Fertility (children per woman)")
+)
+```
+
+```{python}
+dataUS = data.loc[data['country'] == 'United States']
+
+alt.Chart(dataUS).mark_area().encode(
+    alt.X('year:O', title = "Year"),
+    alt.Y('fertility:Q', title = "Fertility (children per woman)")
+)
+```
+
+## + `interpolate='monotone'`
+
+```{.python  code-line-numbers="1|"}
+alt.Chart(dataUS).mark_area(interpolate='monotone').encode(
+    alt.X('year:O', title = "Year"),
+    alt.Y('fertility:Q', title = "Fertility (children per woman)")
+)
+```
+
+```{python}
+alt.Chart(dataUS).mark_area(interpolate='monotone').encode(
+    alt.X('year:O', title = "Year"),
+    alt.Y('fertility:Q', title = "Fertility (children per woman)")
+)
+```
+
+## `mark_area()` with stacking
+
+```{.python  code-line-numbers="|5"}
+dataNA = data[data['country'].isin(['United States', 'Mexico', 'Canada'])]
+alt.Chart(dataNA).mark_area().encode(
+    alt.X('year:O', title = "Year"),
+    alt.Y('pop:Q', title = "Population"),
+    alt.Color('country:N', title = "Country")
+)
+```
+
+```{python}
+dataNA = data[data['country'].isin(['United States', 'Mexico', 'Canada'])]
+alt.Chart(dataNA).mark_area().encode(
+    alt.X('year:O', title = "Year"),
+    alt.Y('pop:Q', title = "Population"),
+    alt.Color('country:N', title = "Country")
+)
+```
+
+
+## `mark_area()` with no stacking and opacity {style="font-size: 0.8em"}
+```{.python  code-line-numbers="|1,3"}
+alt.Chart(dataNA).mark_area(opacity=0.5).encode(
+    alt.X('year:O', title = "Year"),
+    alt.Y('pop:Q', stack=None, title = "Population"),
+    alt.Color('country:N', title = "Country")
+)
+```
+
+```{python}
+alt.Chart(dataNA).mark_area(opacity=0.5).encode(
+    alt.X('year:O', title = "Year"),
+    alt.Y('pop:Q', stack=None, title = "Population"),
+    alt.Color('country:N', title = "Country")
+)
+```
+
+<!--PG to SSS I got asked "is there ever a time you would use mark_area without stack?" and I was unable to come up with a good example-->
+
+Discussion: is this a good use of color?
+
+::: {.notes }
+Answer: no, it is quite unintuitive. It's not clear to the reader that the blue == the darkest color because of the way that opacity is set. This is another example of "bad" use of encoding (opacity), because in practice it results in a very difficult-to-understand graph.
+:::
+
+
+## `mark_area()` + `Y2` to show range
+```{.python}
+alt.Chart(dataNA).mark_area().encode(
+    alt.X('year:O', title = "Year"),
+    alt.Y('min(fertility):Q', title = "Fertility (children per woman)"),
+    alt.Y2('max(fertility):Q')
+)
+```
+
+```{python}
+alt.Chart(dataNA).mark_area().encode(
+    alt.X('year:O', title = "Year"),
+    alt.Y('min(fertility):Q', title = "Fertility (children per woman)"),
+    alt.Y2('max(fertility):Q')
+).properties(
+    width={"step": 40}
+)
+```
+
+**Headline**: over time, both the overall fertility values and the variability have declined.
+
+
+## Graphical marks: summary
+- `mark_point()` - Scatter plot points with configurable shapes.
+    - `mark_circle()`	- Scatter plot points as filled circles.
+    - `mark_tick()` - Vertical or horizontal tick marks.
+- `mark_bar()` -	Rectangular bars.
+- `mark_line()` - Connected line segments.
+- `mark_area()` - Filled areas defined by a top-line and a baseline.
+
+For a complete list, and links to examples, see the [Altair marks documentation](https://altair-viz.github.io/user_guide/marks/index.html).
+
+## "Bad" marks & encoding practices to avoid
+- Redundant encodings
+- "Wasted opportunities" to encode useful information
+- Encodings that require a lot of mental effort for audience
+    - Audience has to look back at legend frequently
+    - Or keep a lot in their working memory (e.g., shapes)
+
+
+
+# Labels
+
+## Roadmap
+* Overarching principle: **minimize audience's mental effort**
+* 3 suggestions
+
+## Why labels matter
+* Marks and encodings tell us *how* data vary
+* The text tells us *what* varies
+* **Well-chosen text reduces the amount of thinking the reader has to do.**
+    - "What does this stand for?"
+    - "What is the scale?"
+
+
+## Recall: visualization guidelines
+1. **All axes and units are properly labeled and legible**
+2. No words or data points are cut off in your final output
+3. Encodings should be sensible/appropriate
+
+## Suggestion 1A: label every axis
+* No dataset variable names! 
+* Looks unprofessional and also slows reader down
+* Here, they have to pause and decode what `pop` and `life_expect` stand for
+
+```{python}
+alt.Chart(data2000).mark_circle(size=100).encode(
+    alt.X('life_expect:Q', scale=alt.Scale(zero=False)),
+    alt.Y('pop:Q', scale=alt.Scale(zero=False))
+)
+```
+
+## Suggestion 1B: include units where appropriate {style="font-size: 0.8em"}
+* Numbers without units are ambiguous
+* "Average rainfall" is meaningless without unit (inches)
+
+```{python}
+alt.Chart(seattle).mark_bar().encode(
+    alt.X('month(date):O', title = "Month"),
+    alt.Y('average(precipitation):Q', title = "Average rainfall")
+)
+```
+
+* Caveat: for some common measures, units are unnecessary -- no need for "Life expectancy (years)"
+
+## Suggestion 1C: label your scale
+* Never hide any transformations or scaling
+* Here we are plotting log of population, but you wouldn't know that from the label
+
+```{python}
+import numpy as np
+
+data2000['log_pop'] = np.log(data2000['pop'])
+
+alt.Chart(data2000).mark_bar().encode(
+    alt.X('country:N', title = "Country", sort = alt.EncodingSortField(field='log_pop', order='descending')),
+    alt.Y('log_pop:Q', title = "Population"),
+)
+```
+* Percent (%) is also a scale you should make note of
+
+# Marks and Encodings: Summary {style="font-size: 0.75em"}
+- Building blocks of data visualization are:
+    - Data type
+    - Encodings
+- Also important: labels can make or break a graph
+- No "right" way to visualize something -- it depends on your audience/message
+    - But there are a series of "bad" practices to avoid
+    - Key idea: **minimize your reader's mental effort**
+
+
+

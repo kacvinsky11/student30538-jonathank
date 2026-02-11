@@ -1,0 +1,30 @@
+---
+title: "Visualization - Intro (Lecture 2)"
+author: "Peter Ganong and Maggie Shi"
+date: today
+date-format: long
+format: 
+  revealjs:
+    slide-number: true
+    show-slide-number: all
+    css: custom-styles.css
+    self-contained: true
+---
+
+## Do-pair-share {background-color="aliceblue"}
+
+* What happens when you make `precipitation` `O`rdinal?
+* What rank-ordering does `altair` assume when you declare the data ordinal?
+
+Starter code: 
+
+```{python}
+import altair as alt
+from vega_datasets import data as vega_data
+seattle = vega_data.seattle_weather()
+alt.Chart(seattle).mark_bar().encode(
+    alt.X('month(date):O', title = "Month"),
+    alt.Y('average(precipitation):Q', title = "Average rainfall (in.)")
+)
+```
+

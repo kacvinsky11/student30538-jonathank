@@ -1,0 +1,21 @@
+.notes.content-visible[speaker-profile="speaker"] {
+  border: 2px solid red;
+  padding: 10px;
+  border-radius: 5px; /* Optional: makes the corners rounded */
+}
+
+
+/* dark background + padding */
+pre.dark-code,
+pre.dark-code code {
+  background: #000 !important;
+  padding: 0.75em;
+  border-radius: 4px;
+}
+
+/* make *all* nested tokens white, overriding highlight.js colours */
+pre.dark-code *,
+pre.dark-code code {
+  color: #fff !important;
+}
+

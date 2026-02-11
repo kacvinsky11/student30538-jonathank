@@ -237,7 +237,7 @@ Coding is no exception. <strong>Use reprex</strong>.</p>
 </section>
 <section id="bad-example" class="slide level2">
 <h2>Bad example</h2>
-<div id="a09fc288" class="cell" data-execution_count="1">
+<div id="ed7afe1a" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href=""></a>paid_fraction <span class="op">=</span> paid_fraction.sort_values(ascending<span class="op">=</span><span class="va">False</span>).reset_index()</span>
 <span id="cb1-2"><a href=""></a><span class="bu">print</span>(paid_fraction.head())</span>
 <span id="cb1-3"><a href=""></a>paid_fraction.columns <span class="op">=</span> [<span class="st">'vehicle_make'</span>, <span class="st">'fraction_paid'</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -260,7 +260,7 @@ Not clear where (and what) the error is
 </section>
 <section id="good-example-using-reprex" class="slide level2">
 <h2>Good example (using reprex)</h2>
-<div id="c0220d07" class="cell" data-execution_count="2">
+<div id="8436bd98" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href=""></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb2-2"><a href=""></a>df <span class="op">=</span> pd.DataFrame({ <span class="st">"vehicle_make"</span>: [<span class="st">"LEXU"</span>, <span class="st">"FORD"</span>],</span>
 <span id="cb2-3"><a href=""></a>                    <span class="st">"ticket_queue"</span>: [<span class="st">"Paid"</span>, <span class="st">"Paid"</span>]})</span>
@@ -296,7 +296,7 @@ contain only necessary things
 <img data-src="img/bad_ex.png" class="r-stretch"></section>
 <section id="good-example" class="slide level2">
 <h2>Good Example</h2>
-<div id="58695b12" class="cell" data-execution_count="3">
+<div id="7e3e7c41" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href=""></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb3-2"><a href=""></a>df <span class="op">=</span> pd.DataFrame({<span class="st">"id"</span>:[<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>], <span class="st">"score"</span>:[<span class="dv">10</span>,<span class="dv">20</span>,<span class="dv">30</span>]})</span>
 <span id="cb3-3"><a href=""></a><span class="co"># This line will create an error ValueError: Cannot set a DataFrame with multiple columns to the single column flag</span></span>

@@ -1,0 +1,36 @@
+---
+title: "Visualization - Intro - Do-Pair-Share"
+author: "Peter Ganong and Maggie Shi"
+date: today
+date-format: long
+format: 
+  revealjs:
+    slide-number: true
+    show-slide-number: all
+    css: custom-styles.css
+    self-contained: true
+---
+
+## Do-pair-share {background-color="aliceblue"}
+* *Do* -- make a plot on your own
+* *Pair* -- compare your results with person next to you
+* *Share* -- discuss results as a class
+
+## Data Transformation: Do-pair-share {background-color="aliceblue"}
+
+Make a bar plot showing the **lowest** rainfall for each city in the dataset.
+
+```{python style="font-size: 0.8em"}
+import pandas as pd
+import altair as alt    
+df = pd.DataFrame({
+    'city': ['Seattle', 'Seattle', 'Seattle', 'Seattle', 'New York', 'New York', 'New York', 'New York', 'Chicago', 'Chicago', 'Chicago', 'Chicago'],
+    'month': [1, 4, 8, 12, 1, 4, 8, 12, 1, 4, 8, 12],
+    'precip': [3.12, 2.68, 0.87, 5.31, 2.1, 3.94, 4.13, 3.58, 3.3, 3.62, 3.98, 2.56]
+})
+
+# Type your code here and click 'Run Cell' to run. 
+# You may be prompted to pick a kernel -- you should pick 'dap'
+```
+
+* Hint: Altair's aggregation methods are [here](https://altair-viz.github.io/user_guide/encodings/index.html#aggregation-functions)

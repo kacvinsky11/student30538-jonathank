@@ -3,6 +3,10 @@
 ## University of Chicago Harris School of Public Policy
 ## Peter Ganong and Maggie Shi
 
+# Minilesson Recordings
+
+Found [here](https://uchicago.app.box.com/folder/359280505901?s=zdgwdq3hrg0d888pwexrjb9matlaocq3), too big to push to the student repo
+
 # Repository Structure
 
 Lectures are stored in the `lectures` folder. Within each folder, each lecture will have its own folder with slides. 
@@ -81,6 +85,15 @@ After this step `jupyter kernelspec list` should include a line like:
 ```
 dap          /Users/…/Library/Jupyter/kernels/dap
 ```
+
+---
+
+## Install Quarto and Jupyter Extension
+1. Open VS Code  
+2. Open Extensions (`Cmd + Shift + X` on Mac, `Ctrl + Shift + X` on Windows)  
+3. Search for **Quarto**  and install (publisher: Quarto)
+4. Search for **Jupyter**  and install (publisher: Microsoft)  
+5. Restart VS Code  
 
 
 Feel free to reach out via EdDiscussion if you have any questions or run into any issues. Happy coding!

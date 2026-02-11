@@ -1,0 +1,50 @@
+---
+title: "Do-Pair-Share 1 Solution"
+author: "Peter Ganong and Maggie Shi"
+date: today
+date-format: long
+format: 
+  revealjs:
+    slide-number: true
+    show-slide-number: all
+    css: custom-styles.css
+    self-contained: true
+---
+
+
+
+## Data Transformation: Do-pair-share solution {background-color="aliceblue"}
+
+Make a bar plot showing the **lowest** rainfall for each city in the dataset
+
+```{.python style="font-size: 0.8em" code-line-numbers="9-12"}
+import pandas as pd
+import altair as alt    
+df = pd.DataFrame({
+    'city': ['Seattle', 'Seattle', 'Seattle', 'Seattle', 'New York', 'New York', 'New York', 'New York', 'Chicago', 'Chicago', 'Chicago', 'Chicago'],
+    'month': [1, 4, 8, 12, 1, 4, 8, 12, 1, 4, 8, 12],
+    'precip': [3.12, 2.68, 0.87, 5.31, 2.1, 3.94, 4.13, 3.58, 3.3, 3.62, 3.98, 2.56]
+})
+
+alt.Chart(df).mark_bar().encode(
+    alt.X('min(precip)', title = 'Lowest rainfall (in.)'),
+    alt.Y('city', title = 'City')
+)
+```
+
+```{python}
+import pandas as pd
+import altair as alt    
+df = pd.DataFrame({
+    'city': ['Seattle', 'Seattle', 'Seattle', 'Seattle', 'New York', 'New York', 'New York', 'New York', 'Chicago', 'Chicago', 'Chicago', 'Chicago'],
+    'month': [1, 4, 8, 12, 1, 4, 8, 12, 1, 4, 8, 12],
+    'precip': [3.12, 2.68, 0.87, 5.31, 2.1, 3.94, 4.13, 3.58, 3.3, 3.62, 3.98, 2.56]
+})
+
+alt.Chart(df).mark_bar().encode(
+    alt.X('min(precip)', title = 'Lowest rainfall (in.)'),
+    alt.Y('city', title = 'City')
+)
+```
+
+

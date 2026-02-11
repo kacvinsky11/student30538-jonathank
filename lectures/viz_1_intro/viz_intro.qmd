@@ -1,0 +1,961 @@
+---
+title: "Visualization - Intro (Lecture 2)"
+author: "Peter Ganong and Maggie Shi"
+date: January 12, 2026
+date-format: long
+format: 
+  revealjs:
+    slide-number: true
+    show-slide-number: all
+    css: custom-styles.css
+    self-contained: true
+---
+
+## Citing our sources
+- Schwabish: "Better Data Visualizations" [(link to purchase)](https://cup.columbia.edu/book/better-data-visualizations/9780231193115/)
+- Healy: "Data Visualization" [(link to full text)](https://socviz.co/)
+- Heer, Moritz, VanderPlas, and Craft `altair` textbook: [(link to full text)](https://idl.uw.edu/visualization-curriculum/)
+
+# Why visualize? 
+## Why visualize?: roadmap
+- Introduce **Anscombe's Quartet** -- a classic data visualization example
+- Look at the data directly, calculate summary statistics, then plot
+- Discuss what observations can be made at each step
+
+
+## Anscombe's Quartet 
+- Introduced by statistician **Francis Anscombe** in **1973**
+- Consists of **four small datasets** — each with **two variables**: `x` and `y`
+
+
+
+## The raw data {style="font-size: 0.8em"}
+<div style="font-size:70%;">
+<table style="border-collapse: collapse; text-align: center;">
+  <thead>
+    <tr>
+      <th colspan="2" style="border-right: 2px solid black;">I</th>
+      <th colspan="2" style="border-right: 2px solid black;">II</th>
+      <th colspan="2" style="border-right: 2px solid black;">III</th>
+      <th colspan="2">IV</th>
+    </tr>
+    <tr>
+      <th>x</th><th style="border-right: 2px solid black;">y</th>
+      <th>x</th><th style="border-right: 2px solid black;">y</th>
+      <th>x</th><th style="border-right: 2px solid black;">y</th>
+      <th>x</th><th>y</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>4</td><td style="border-right:2px solid black;">4.3</td><td>4</td><td style="border-right:2px solid black;">3.1</td><td>4</td><td style="border-right:2px solid black;">5.4</td><td>8</td><td>5.3</td></tr>
+    <tr><td>5</td><td style="border-right:2px solid black;">5.7</td><td>5</td><td style="border-right:2px solid black;">4.7</td><td>5</td><td style="border-right:2px solid black;">5.7</td><td>8</td><td>5.8</td></tr>
+    <tr><td>6</td><td style="border-right:2px solid black;">7.2</td><td>6</td><td style="border-right:2px solid black;">6.1</td><td>6</td><td style="border-right:2px solid black;">6.1</td><td>8</td><td>6.6</td></tr>
+    <tr><td>7</td><td style="border-right:2px solid black;">4.8</td><td>7</td><td style="border-right:2px solid black;">7.3</td><td>7</td><td style="border-right:2px solid black;">6.4</td><td>8</td><td>6.9</td></tr>
+    <tr><td>8</td><td style="border-right:2px solid black;">7.0</td><td>8</td><td style="border-right:2px solid black;">8.1</td><td>8</td><td style="border-right:2px solid black;">6.8</td><td>8</td><td>7.0</td></tr>
+    <tr><td>9</td><td style="border-right:2px solid black;">8.8</td><td>9</td><td style="border-right:2px solid black;">8.8</td><td>9</td><td style="border-right:2px solid black;">7.1</td><td>8</td><td>7.7</td></tr>
+    <tr><td>10</td><td style="border-right:2px solid black;">8.0</td><td>10</td><td style="border-right:2px solid black;">9.1</td><td>10</td><td style="border-right:2px solid black;">7.5</td><td>8</td><td>7.9</td></tr>
+    <tr><td>11</td><td style="border-right:2px solid black;">8.3</td><td>11</td><td style="border-right:2px solid black;">9.3</td><td>11</td><td style="border-right:2px solid black;">7.8</td><td>8</td><td>8.5</td></tr>
+    <tr><td>12</td><td style="border-right:2px solid black;">10.8</td><td>12</td><td style="border-right:2px solid black;">9.1</td><td>12</td><td style="border-right:2px solid black;">8.2</td><td>8</td><td>8.8</td></tr>
+    <tr><td>13</td><td style="border-right:2px solid black;">7.6</td><td>13</td><td style="border-right:2px solid black;">8.7</td><td>13</td><td style="border-right:2px solid black;">12.7</td><td>8</td><td>12.5</td></tr>
+    <tr><td>14</td><td style="border-right:2px solid black;">10.0</td><td>14</td><td style="border-right:2px solid black;">8.1</td><td>14</td><td style="border-right:2px solid black;">8.8</td><td>19</td><td>5.6</td></tr>
+  </tbody>
+</table>
+</div>
+
+Discussion q -- What are some observations we can make from the raw data?
+
+
+::: {.notes }
+
+- The first three series of Xs are identical.
+- All the x values are whole numbers, while the y values are decimal.
+- If you stare at it for awhile, you can see some **outliers**:
+  - A y value of 12.7 in Series III.
+  - An x value of 19 in Series IV.
+
+Overall, can't make particularly insightful observations based on just looking at the data 
+:::
+
+
+## Summary statistics
+Let's also compute some summary statistics
+
+
+<div style="font-size:70%; overflow-x: auto">
+```{python}
+import pandas as pd
+import numpy as np
+import altair as alt
+df = pd.DataFrame({
+    "X": (
+        [10, 8, 13, 9, 11, 14, 6, 4, 12, 7, 5] +    # I
+        [10, 8, 13, 9, 11, 14, 6, 4, 12, 7, 5] +    # II
+        [10, 8, 13, 9, 11, 14, 6, 4, 12, 7, 5] +    # III
+        [8, 8, 8, 8, 8, 8, 8, 19, 8, 8, 8]          # IV
+    ),
+    "Y": [
+        8.0, 7.0, 7.6, 8.8, 8.3, 10.0, 7.2, 4.3, 10.8, 4.8, 5.7,  # I
+        9.1, 8.1, 8.7, 8.8, 9.3, 8.1, 6.1, 3.1, 9.1, 7.3, 4.7,   # II
+        7.5, 6.8, 12.7, 7.1, 7.8, 8.8, 6.1, 5.4, 8.2, 6.4, 5.7,  # III
+        6.6, 5.8, 7.7, 8.8, 8.5, 7.0, 5.3, 12.5, 5.6, 7.9, 6.9   # IV
+    ],
+    "series": ["I"] * 11 + ["II"] * 11 + ["III"] * 11 + ["IV"] * 11
+})
+
+summary_stats = df.groupby("series").apply(
+    lambda d: pd.Series({
+        "Mean X": round(d["X"].mean(), 1),
+        "Mean Y": round(d["Y"].mean(), 1),
+        "Var(x)": round(d["X"].var(ddof=1), 1),
+        "Var(y)": round(d["Y"].var(ddof=1), 1),
+        "Corr(x,y)": round(d["X"].corr(d["Y"]), 1),
+        "Regression": f"y = {np.polyfit(d['X'], d['Y'], 1)[0]:.2f}x + {np.polyfit(d['X'], d['Y'], 1)[1]:.1f}"
+    })
+).reset_index()
+summary_stats
+```
+
+```{python}
+series1 = pd.DataFrame({
+    "X": [10, 8, 13, 9, 11, 14, 6, 4, 12, 7, 5],
+    "Y": [8.0, 7.0, 7.6, 8.8, 8.3, 10.0, 7.2, 4.3, 10.8, 4.8, 5.7]
+})
+series2 = pd.DataFrame({
+    "X": [10, 8, 13, 9, 11, 14, 6, 4, 12, 7, 5],
+    "Y": [9.1, 8.1, 8.7, 8.8, 9.3, 8.1, 6.1, 3.1, 9.1, 7.3, 4.7]
+})
+series3 = pd.DataFrame({
+    "X": [10, 8, 13, 9, 11, 14, 6, 4, 12, 7, 5],
+    "Y": [7.5, 6.8, 12.7, 7.1, 7.8, 8.8, 6.1, 5.4, 8.2, 6.4, 5.7]
+})
+series4 = pd.DataFrame({
+    "X": [8, 8, 8, 8, 8, 8, 8, 19, 8, 8, 8],
+    "Y": [6.6, 5.8, 7.7, 8.8, 8.5, 7.0, 5.3, 12.5, 5.6, 7.9, 6.9]
+})
+
+chart1 = alt.Chart(series1).mark_point(filled=True, size=60).encode(
+    x="X", y="Y"
+).properties(title="Series I", width=150, height=150)
+
+chart2 = alt.Chart(series2).mark_point(filled=True, size=60).encode(
+    x="X", y="Y"
+).properties(title="Series II", width=150, height=150)
+
+chart3 = alt.Chart(series3).mark_point(filled=True, size=60).encode(
+    x="X", y="Y"
+).properties(title="Series III", width=150, height=150)
+
+chart4 = alt.Chart(series4).mark_point(filled=True, size=60).encode(
+    x="X", y="Y"
+).properties(title="Series IV", width=150, height=150)
+```
+
+</div>
+
+
+- All four datasets have basically **identical** summary statistics and regression coefficients!
+- But are they really capturing the same relationships between x and y?
+
+
+## Anscombe's quartet, visualized
+
+```{python}
+chart1 | chart2 | chart3 | chart4
+```
+
+Discussion question: what observations can we now make about the similarities and differences across the series?
+
+## Observations from the visualization
+```{python}
+chart1 | chart2 | chart3 | chart4
+```
+
+- Series I, II, and III illustrate very different positive relationships between x and y
+    - I: noisy and approximately linear
+    - II: quadratic and fully deterministic
+    - III: very linear, with exception of an outlier
+
+
+## Observations from the visualization
+
+```{python}
+chart1 | chart2 | chart3 | chart4
+```
+
+- The two outliers in III and IV stand out much more quickly
+- The positive relationship suggested by the regression in series IV is just an artifact of the outlier
+
+
+## Why visualize?: summary
+- Anscombe's Quartet illustrates that while summary statistics are useful, we can't rely on them alone 
+- The best way to detect patterns is to visualize your data
+
+
+# Introduction to Vega-Lite and `altair`
+
+## Roadmap
+
+* What's different from `matplotlib`?
+* What is Vega-Lite?
+* What is `altair`?
+* First plot -- image and then grammar
+
+
+
+
+## `matplotlib` is imperative
+```{.python}
+import matplotlib.pyplot as plt
+
+plt.ylabel("Y axis")
+plt.figure(figsize=(6, 4))
+plt.title("A Line Plot")
+plt.plot([1, 2, 3], [4, 1, 6], color='red', marker='o')
+plt.xlabel("X axis")
+
+plt.grid(True)
+plt.show()
+```
+
+* **Imperative**: you tell computer directly how to draw graph
+* Each graphic element is layered on one-by-one, but not organized
+* Not clear what type of plot this is
+* Not clear how data is being plotted (which axis is which?)
+
+
+
+## Declarative approaches to visualization
+* Good graphics packages are **declarative**: you provide a high-level specification of *what* you want in the visualization. 
+* Importantly, you do so in an **organized** way.
+* Declarative visualization approaches have three inputs: 
+    * **Data**
+    * **Graphical marks**: the "type" of plot -- bar, scatter, etc.
+    * **Encoding channels**: x-axis, y-axis, colors, etc
+
+We are going to use *Vega-Lite* + `altair` in this class.
+
+<!-- ## What is Vega-Lite and Altair?
+
+* Just like English has a grammar which lets you write a sentence, graphics can have a grammar that let you make a plot.
+
+* A good grammar should be easy to use and clear (unlike English...).
+
+* We are going to use *Vega-Lite* + *Altair* in this class. -->
+
+## What is Vega-Lite and Altair?
+* Vega-Lite is a "grammar" of interactive graphics 
+    * Under the hood: [JSON (JavaScript Object Notation)](https://en.wikipedia.org/wiki/JSON) is used to record Vega-Lite specifications
+    * *Note: you will not have to write Vega-Lite manually*
+* `altair` is a Python package allows Python to write Vega-Lite
+
+
+<!-- * When using a **declarative approach**, your Python code tells `altair` how you want to visualize the data and it writes Vega-lite to "draw" the graph
+* When using an **imperative approach**, your Python code tells `matplotlib` directly how to "draw" the graph  -->
+
+
+
+## Example: Graph vs. Grammar {layout="2-column"}
+:::: {.columns}
+::: {.column width="35%"}
+Plot:
+```{python}
+#| echo: false
+import altair as alt
+from vega_datasets import data as vega_data
+df = vega_data.seattle_weather()
+alt.Chart(df).mark_bar().encode(
+    alt.X('month(date)', title = "Month"),
+    alt.Y('average(precipitation)', title = "Average rainfall (in.)")
+)
+```
+
+[Source](https://vega.github.io/vega-lite/#example).
+:::
+::: {.column width="65%"}
+*Vega-lite* (JSON) underlying the plot:
+
+```{.json .tiny}
+{
+  "data": {"url": "data/seattle-weather.csv"},
+  "mark": "bar",
+  "encoding": {
+    "x": {"timeUnit": "month", "field": "date", "type": "ordinal"},
+    "y": {"aggregate": "mean", "field": "precipitation"}
+  }
+}
+```
+
+* This is the code that is "under the hood" of the graphic -- *not* the Python code you write.
+* Discussion question: can you tell what each line of text means?
+:::
+::::
+
+## Why the emphasis on grammar?
+* Packages for making graphics and coding languages change over time
+* We chose to teach a package with an underlying grammar because we are trying to foreground the *conceptual* aspects of data visualization
+* Insights are portable, even as the particular package/language you use changes over time
+
+
+## Summary
+
+* Use a declarative approach
+* Grammar: Vega-lite
+* Python package to write Vega-lite: `altair`
+* Gives a coherent conceptual representation underlying a plot
+
+
+# Introduction to `altair` 
+
+## What is `altair`? + roadmap
+
+`altair` is a Python [API (Application Programming Interface)](https://en.wikipedia.org/wiki/Application_programming_interface) that generates Vega-Lite specifications.
+
+Roadmap:
+
+* Load package
+* Define dataset we'll work with through rest of class
+
+
+## Imports and Renderer
+
+```{python}
+#| echo: true
+import pandas as pd
+import altair as alt
+```
+
+*Note*: depending on your environment, you may also need to specify a renderer for `altair` (see [Leja's Ed post](https://edstem.org/us/courses/89578/discussion/7498187) as one example)
+
+ <!--
+ * If you are using the class-recommended workflow, you should not need to do anything extra. 
+ PG to MS what does this bullet mean? Is it needed? MS to GGG: I think you wrote this line :) I think it was some issue that didn't show up if you were using VSCode + quarto, but would show up in Jupyter Notebooks? In any case Ive deleted  -->
+
+* If you run into this, please read the documentation for [Displaying Altair Charts](https://altair-viz.github.io/user_guide/display_frontends.html). 
+* If that fails, post in Ed and bring your question to lab.
+
+
+
+<!-- 
+## `vega_datasets` formatted for Pandas
+
+We will often use datasets from the [vega-datasets](https://github.com/vega/vega-datasets) repository in class. Some of these datasets are directly available as Pandas data frames:
+
+```{python}
+#| echo: true
+from vega_datasets import data as vega_data
+cars = vega_data.cars()              
+```
+
+## `vega_datasets` formatted for Pandas
+```{python}
+#| echo: true             
+cars.head()  
+```
+
+## Vega_datasets formatted for JSON
+```{python}
+#URL if you want 
+vega_data.cars.url
+```
+
+What you will see if you go to this link
+```
+   {
+      "Name":"chevrolet chevelle malibu",
+      "Miles_per_Gallon":18,
+      "Cylinders":8,
+      "Displacement":307,
+      "Horsepower":130,
+      "Weight_in_lbs":3504,
+      "Acceleration":12,
+      "Year":"1970-01-01",
+      "Origin":"USA"
+   }, ...
+```
+
+Looks less familiar (and more repetitive). Just use `pd.read_json(data.cars.url)` to convert to tabular 
+-->
+
+## Tidy data: weather data
+* Visualization in `altair` begins with ["tidy"](http://vita.had.co.nz/papers/tidy-data.html) data frames
+    * Each variable is a column
+    * Each observation is a row
+    * Each value is a cell 
+
+* A simple data frame (`df`) containing the average precipitation (`precip`) for a given `city` and `month` :
+```{python}
+#| echo: true     
+df = pd.DataFrame({
+    'city': ['Seattle', 'Seattle', 'Seattle', 'Seattle', 'New York', 'New York', 'New York', 'New York', 'Chicago', 'Chicago', 'Chicago', 'Chicago'],
+    'month': [1, 4, 8, 12, 1, 4, 8, 12, 1, 4, 8, 12],
+    'precip': [3.12, 2.68, 0.87, 5.31, 2.1, 3.94, 4.13, 3.58, 3.3, 3.62, 3.98, 2.56]
+})
+```
+
+## Tidy data: weather data
+```{python}
+#| echo: true     
+df.head()
+```
+
+## *Aside*: in-class examples and tidy data {style="font-size: 0.8em"}
+* Data you will work with is most often *not* as tidy as the in-class examples
+* Much of the work you will do as an analyst is kind of this "unglamorous" work!
+* Using `altair` to make the plot is often the last step 
+    * In lecture, we'll skip the data cleaning to focus on ideas and skills about how to do visualization well
+    * In problem sets + project, you will start with messy data that will require cleaning
+    * Why don't we cover data cleaning in lecture? Every dataset needs different steps for cleaning; best way to teach it is therefore through hands-on exercises in the problem sets.
+
+
+## Summary
+
+* `altair` is an API that enables Python to "speak" in Vega-Lite's grammar
+* Input to `altair`: tidy data
+
+# Building a first chart
+
+## Building a first chart: roadmap
+* Incrementally build our first chart in `altair`
+* Then build our first aggregated chart
+
+## `altair` ingredients
+Recall that we need three inputs to a *Vega-lite* chart:
+
+* **Data**
+* **Graphical marks**: the "type" of plot - bar, scatter, etc.
+* **Encoding channels**: x-axis, y-axis, colors, etc
+
+
+## Data: the `Chart` object
+```{python}
+#| echo: true   
+mychart = alt.Chart(df)
+```
+
+* We have defined the `mychart` object and passed it the data
+* But nothing has been plotted yet -- still need mark and encoding
+
+
+## Mark: point
+```{python}
+#| echo: true   
+mychart = alt.Chart(df).mark_point()
+
+mychart
+```
+
+* Now, declare the mark: a `mark_point()`
+* We haven't declared what's on the axes
+* So actually this is *all the data points*, located in the same place
+
+
+
+## Encoding: one point per city on y-axis
+```{python}
+#| echo: true  
+mychart = alt.Chart(df).mark_point().encode(
+  alt.Y('city')
+)
+
+mychart
+```
+
+* Using `alt.Y`, we've separated data by one attribute along the y-axis: city
+* We haven't encoded anything on the x-axis yet!
+* So underneath each point, we have multiple points overlapping within each city
+
+## Encoding: xy coordinates
+```{python}
+#| echo: true  
+mychart = alt.Chart(df).mark_point().encode(
+  alt.X('precip'),
+  alt.Y('city')
+)
+
+mychart
+```
+
+* Process: Code is super-duper readable.
+* Note that we've directly plotted all the data
+* Substance: _Seattle exhibits both the least-rainiest and most-rainiest months!_
+
+<!-- PG note to self: textbook then discusses encoding but provides no explanation for why this is useful or appropriate. I am skipping it entirely for now, can revisit it later -->
+
+<!-- MS note to self: check if the order in which `mark_point() and `encode()` go matters. -->
+
+
+## Quick Aggregation
+
+```{.python code-line-numbers="2"}
+mychart = alt.Chart(df).mark_point().encode(
+  alt.X('average(precip)'),
+  alt.Y('city')
+)
+
+mychart
+```
+
+```{python}
+alt.Chart(df).mark_point().encode(
+  alt.X('average(precip)'),
+  alt.Y('city')
+)
+
+```
+
+* Say instead of plotting all data points, we want to transform and aggregate it first
+* `altair` has a few "shorthand" aggregation functions. like `average()`
+* We will discuss more complicated aggregation in week 3
+
+## Changing Marks is Straightforward
+
+```{.python code-line-numbers="1-1"}
+mychart = alt.Chart(df).mark_bar().encode( 
+  alt.X('average(precip)'),
+  alt.Y('city')
+)
+
+mychart
+```
+
+```{python}
+alt.Chart(df).mark_bar().encode(
+    alt.X('average(precip)'),
+    alt.Y('city')
+)
+```
+
+## Syntax: Understanding Altair's shorthands.
+
+Three ways to say the same idea
+
+```{.python}
+# what we will continue to use
+alt.X('average(precip)')
+
+# shorter
+x = 'average(precip)'
+
+# longer
+alt.X(aggregate='average', field='precip', type='quantitative')
+```
+
+* Going forward, we will primarily use the first
+* But you may see all three in problem sets, lab assessments, etc.
+
+## Customizing a plot: colors and labels
+
+
+```{.python code-line-numbers="1|2-3"}
+alt.Chart(df).mark_point(color='firebrick').encode(
+  alt.X('precip', title='Rain  (in)'),
+  alt.Y('city', title='City'),
+)
+```
+
+```{python}
+alt.Chart(df).mark_point(color='firebrick').encode(
+  alt.X('precip', axis=alt.Axis(title='Rain  (in)')),
+  alt.Y('city', axis=alt.Axis(title='City')),
+)
+```
+
+
+* Add customizations and labels where you declare the relevant mark or encoding
+* This is what we mean by "grammar" -- code is organized in a consistent, readable way
+
+
+## Comparison to `matplotlib`{style="font-size: 0.7em"}
+
+:::: {.columns}
+::: {.column width="49%"}
+`altair`
+
+```{.python style="font-size: 0.6em"}
+mychart = alt.Chart(df).mark_point(color='firebrick').encode(
+  alt.X('average(precip)', title='Rain  (in)'),
+  alt.Y('city', title='City'),
+)
+
+mychart
+```
+
+
+```{python}
+mychart = alt.Chart(df).mark_point(color='firebrick').encode(
+  alt.X('average(precip)', title='Rain  (in)'),
+  alt.Y('city', title='City'),
+)
+
+mychart
+```
+
+:::
+::: {.column width="49%"}
+`matplotlib`
+
+
+```{.python  style="font-size: 0.6em" code-line-numbers="|2|5-6,8"}
+import matplotlib.pyplot as plt
+avg_precip = df.groupby('city', as_index=False)['precip'].mean()
+
+plt.figure(figsize=(4, 3))
+plt.xlabel('Rain (in)')
+plt.scatter(avg_precip['precip'], avg_precip['city'], color='firebrick')
+plt.grid(True, axis='x')
+plt.ylabel('City')
+plt.show()
+```
+
+```{python}
+import matplotlib.pyplot as plt
+avg_precip = df.groupby('city', as_index=False)['precip'].mean()
+
+plt.figure(figsize=(1.8, 1.5))
+plt.xlabel('Rain (in)')
+plt.scatter(avg_precip['precip'], avg_precip['city'], color='firebrick')
+plt.grid(True, axis='x')
+plt.ylabel('City')
+plt.show()
+```
+:::
+
+::::
+
+<span style="font-size:0.7em;">
+
+* `matplotlib`: have to first make a separate, collapsed `pandas` dataframe
+* x and y labels defined separately from code for plot
+
+</span>
+
+## Visualization guidelines
+* All axes and units are properly labeled and legible
+* No words or data points are cut off in your final output
+* Encodings should be sensible/appropriate -- *more in this next lecture*
+
+## Building a first chart: summary
+
+* Everything begins with a `Chart(data)`
+* Every `Chart` needs a `mark`
+* Every `Chart` needs guidance how to encode the data in terms of `mark`s
+* Simple chart formatting: `mark_point(color='firebrick')`, `alt.X(title = '...')`
+
+## Do-pair-share {background-color="aliceblue" style="font-size: 0.8em"}
+* *Do* -- make a plot on your own
+* *Pair* -- compare your results with person next to you
+* *Share* -- discuss results as a class
+
+1. Open `viz_1_intro/viz_1_dps.qmd` in VSCode
+2. If you have the [Quarto and Jupyter extensions installed + `dap` conda environment set up (link)](https://github.com/uchicago-harris-dap/student30538-w26/blob/main/README.md), you should be able to directly "Run Cell" within `.qmd` file
+
+[![](pictures/quarto_run_ex.png)]
+
+## Data Transformation: Do-pair-share {background-color="aliceblue"}
+
+* Make a bar plot showing the **lowest** rainfall for each city in the dataset.
+* Starter code in `viz_1_intro/viz_1_dps.qmd` file in student repo:
+
+```{.python style="font-size: 0.8em"}
+import pandas as pd
+import altair as alt    
+df = pd.DataFrame({
+    'city': ['Seattle', 'Seattle', 'Seattle', 'Seattle', 'New York', 'New York', 'New York', 'New York', 'Chicago', 'Chicago', 'Chicago', 'Chicago'],
+    'month': [1, 4, 8, 12, 1, 4, 8, 12, 1, 4, 8, 12],
+    'precip': [3.12, 2.68, 0.87, 5.31, 2.1, 3.94, 4.13, 3.58, 3.3, 3.62, 3.98, 2.56]
+})
+```
+
+* Hint: Altair's aggregation methods are [here](https://altair-viz.github.io/user_guide/encodings/index.html#aggregation-functions)
+
+
+
+
+
+# Multiple Views 
+
+## Multiple Views: roadmap
+
+* Introduce `mark_line()`
+* Multiple marks
+* Multiple panels
+
+
+
+## `mark_line()`
+
+
+```{.python}
+line = alt.Chart(df).mark_line().encode(
+    alt.X('month', title = "Month"),
+    alt.Y('average(precip)', title = "Average rainfall (in.)")
+)
+
+line
+```
+
+```{python}
+alt.Chart(df).mark_line().encode(
+    alt.X('month', title = "Month"),
+    alt.Y('average(precip)', title = "Average rainfall (in.)")
+)
+```
+
+
+## Multiple Marks
+* Now say that we want to add layer scatter points on top of our line to highlight the unit of observation
+* `altair` grammar allows you to "layer" one set of marks on another with intuitive syntax: `+`
+
+
+## Multiple Marks 
+
+```{.python style="font-size: 0.8em" code-line-numbers="1-4|5-8|9"}
+line = alt.Chart(df).mark_line().encode(
+    alt.X('month', title = "Month"),
+    alt.Y('average(precip)', title = "Average rainfall (in.)")
+)
+point = alt.Chart(df).mark_circle(color='firebrick').encode(
+    alt.X('month', title = "Month"),
+    alt.Y('average(precip)', title = "Average rainfall (in.)")
+)
+line + point
+```
+
+```{python}
+line_avg = alt.Chart(df).mark_line().encode(
+    alt.X('month', title = "Month"),
+    alt.Y('average(precip)', title = "Average rainfall (in.)")
+)
+point_avg = alt.Chart(df).mark_circle(color='firebrick').encode(
+    alt.X('month', title = "Month"),
+    alt.Y('average(precip)', title = "Average rainfall (in.)")
+)
+line_avg + point_avg
+```
+
+## Multiple Panels
+* Now say we want to place another plot *next to* our original plot
+* Again, `altair` grammar allows for fairly intuitive syntax: `|`
+
+
+## Multiple Panels 
+```{.python style="font-size: 0.8em" code-line-numbers="|6"}
+line_min = alt.Chart(df).mark_line().encode(
+    alt.X('month', title = "Month"),
+    alt.Y('min(precip)', title = "Lowest rainfall (in.)")
+)
+
+line_avg | line_min 
+```
+
+```{python}
+line_min = alt.Chart(df).mark_line().encode(
+    alt.X('month', title = "Month"),
+    alt.Y('min(precip)', title = "Lowest rainfall (in.)")
+)
+
+line_avg  | line_min 
+```
+
+Discussion: while technically correct, there's something not quite right about these charts...
+
+::: {.notes }
+y-axis scales are not aligned so it makes the min look higher than the average at some points
+:::
+
+## Multiple Panels, take 2 {style="font-size: 0.7em"}
+```{.python  code-line-numbers="5-7"}
+line_min = alt.Chart(df).mark_line().encode(
+    alt.X('month', title = "Month"),
+    alt.Y('min(precip)', title = "Lowest rainfall (in.)")
+)
+combined = line_avg | line_min 
+combined = combined.resolve_scale(y='shared')
+combined
+```
+
+```{python}
+line_min = alt.Chart(df).mark_line().encode(
+    alt.X('month', title = "Month"),
+    alt.Y('min(precip)', title = "Lowest rainfall (in.)")
+)
+combined = line_avg | line_min 
+combined = combined.resolve_scale(y='shared')
+combined
+```
+
+
+`resolve_scale()` is applied to `combined`, not `line_avg` or `line_min`
+
+Organized and easy to understand!
+
+## Equivalent graph in `matplotlib`
+Of course, you can make a very similar plot in `matplotlib`
+```{python}
+avg_by_month = df.groupby('month', as_index=False)['precip'].mean()
+min_by_month = df.groupby('month', as_index=False)['precip'].min()
+
+fig, axs = plt.subplots(1, 2, figsize=(12, 4), sharey=True)
+axs[0].plot(avg_by_month['month'], avg_by_month['precip'])
+axs[0].scatter(avg_by_month['month'], avg_by_month['precip'])
+axs[0].set_xlabel('Month')
+axs[0].set_ylabel('Average of precip')
+axs[1].plot(min_by_month['month'], min_by_month['precip'])
+axs[1].scatter(min_by_month['month'], min_by_month['precip'])
+axs[1].set_xlabel('Month')
+axs[1].set_ylabel('Min of precip')
+plt.tight_layout()
+plt.show()
+```
+
+
+
+
+## Equivalent code in `matplotlib`
+```{.python}
+avg_by_month = df.groupby('month', as_index=False)['precip'].mean()
+fig, axs = plt.subplots(1, 2, figsize=(12, 4), sharey=True)
+axs[1].set_ylabel('Min of precip')
+axs[0].plot(avg_by_month['month'], avg_by_month['precip'])
+min_by_month = df.groupby('month', as_index=False)['precip'].min()
+axs[1].scatter(min_by_month['month'], min_by_month['precip'])
+axs[0].scatter(avg_by_month['month'], avg_by_month['precip'])
+axs[0].set_ylabel('Average of precip')
+axs[0].set_xlabel('Month')
+axs[1].plot(min_by_month['month'], min_by_month['precip'])
+axs[1].set_xlabel('Month')
+
+plt.tight_layout()
+plt.show()
+```
+
+* But this is the code that generates it! Very hard for a human to parse.
+* With imperative approach, there's nothing stopping you from writing ugly code like this
+
+
+## Multiple Views -- summary
+* New syntax:
+    * `plot1 + plot2` for multiple marks on same panel
+    * `plot1 | plot2` for multiple panels
+* `altair` allows you to combine multiple plots in an organized and intuitive way
+* Usefulness of grammar and delcarative approach becomes more apparent when extending beyond a single plot
+
+<!--
+# Under the hood: JSON
+
+## roadmap
+
+* Beauty of JSON
+* Teach how Altair writes JSON via three cumulative examples
+* More syntax for working with JSON
+* In-class exercise
+
+## The beauty of JSON
+
+"JSON Schema is the vocabulary that enables JSON data consistency, validity, and interoperability at scale."
+
+Documents that are 
+
+* hierarchical (unlike tables)
+* interpretable for humans and computers
+
+https://vega.github.io/schema/vega-lite/v5.json
+
+## Example from the schema
+
+```{json}
+    "Mark": {
+      "description": "All types of primitive marks.",
+      "enum": [
+        "arc",
+        "area",
+        "bar",
+        "image",
+        "line",
+        "point",
+        "rect",
+        "rule",
+        "text",
+        "tick",
+        "trail",
+        "circle",
+        "square",
+        "geoshape"
+      ],
+      "type": "string"
+```
+
+
+## example 1: snippet from Altair
+
+Altair can best be thought of as a language translator. It writes JSON for you. More specifically, it writes JSON which complies with the grammar rules laid out by Vega-Lite.
+```{python}
+#| echo: true
+#python altair object. will explain :Q in next lecture
+x = alt.X('average(precipitation):Q') 
+print(x.to_json())                  
+```
+
+
+## example 2: longer snippet from Altair
+```{python}
+#| echo: true
+chart = alt.Chart().mark_point().encode(
+    alt.X('average(precipitation):Q'),
+    alt.Y('city:O')
+)
+print(chart.to_json())
+```
+
+## Example 3: add `df` to make the bar plot from earlier in lecture
+```{python}
+#| echo: true
+chart = alt.Chart(df).mark_point().encode(
+    alt.X('average(precip)'),
+    alt.Y('city')
+)
+print(chart.to_json())
+```
+
+## syntax: `keys()`
+```{python}
+#| echo: true
+import json
+chart_as_string = chart.to_json()
+chart = json.loads(chart_as_string)
+chart.keys()
+```
+
+
+## extract dataset
+
+```{python}
+#| echo: true
+chart.get("datasets")
+```
+
+
+## summary
+
+JSON creates documents that are interpretable for humans and computers.
+
+The JSON schema enforces the grammar rules. 
+ 
+<!-- 
+## in-class exercise
+
+1. extract `chart`'s encoding.
+2. extract just the encoding for `x`
+
+## in-class exercise: solution
+```{python}
+chart.get("encoding")
+```
+
+```{python}
+chart.get("encoding").get("x")
+```
+
+-->
+
+
