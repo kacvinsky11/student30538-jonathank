@@ -1,5 +1,5 @@
 ---
-title: "Dashboards (Lecture XXX)"
+title: "Dashboards"
 author: "Peter Ganong and Maggie Shi"
 date: today
 date-format: long
@@ -22,6 +22,21 @@ slide-number: c/t
 
 :::-->
 
+## Skills acquired by end of lecture 
+* Understand benefits (and drawbacks) of dashboards 
+* Launch `streamlit` dashboards locally and deploy online
+* Make basic static and interactive dashboards
+* Set up dashboards that run efficiently
+
+## Materials for this lecture {style="font-size: 0.9em"}
+* We will review code for several example dashboards
+* `all_snippets.pdf`: all code reviewed in lecture
+* Full source code for example dashboards stored in a separate repo than student repo: [https://github.com/uchicago-harris-dap/dashboards](https://github.com/uchicago-harris-dap/dashboards). 
+    * Clone to access source code and launch apps locally
+    * When lecture material says `1/hello_world_1.py`, `2/hello_world_2_local.py`, we are referencing this repo
+    * Example dashboards are also deployed online and linked
+
+
 ## From A Static Process
 ![](pictures/process_1.png){ width=70% fig-align="center"}
 
@@ -42,10 +57,21 @@ slide-number: c/t
 :::
 
 ## To A Dynamic Process
+![](pictures/process_2.png){ width=70% fig-align="center"}
+
+When you analyze a dataset, your process looks a lot more like the dynamic one than the static one. 
+
+
+::: {.notes}
+
+:::
+
+
+## To A Dynamic Process
 ![](pictures/process_3.png){ width=70% fig-align="center"}
 
-* When you analyze a dataset, your process looks a lot more like the dynamic one than the static one. Dashboards allow someone who does not code to do a limited version of the same process you go through.
 
+Dashboards allow someone who does not code to do a limited version of the same process you go through as you code.
 
 ::: {.notes}
 What dashboards to do is they enable someone who does not write code to do a small scale version of the skill that you already have, which is to manipulate the code and re-examine the output.
@@ -64,7 +90,7 @@ The other thing dashboard is that they need your code to be run not just on your
 * There are two other major benefits of dashboards which we will not spend time on in class, but you should also know about 
     * Consolidated information: aggregate data from various sources into one unified interface
     * Real-time data metrics: dynamic view based on automatically-updated data feed 
-* *(Impressive: they are a great way to flex your data skills for your portfolio!)*
+* *(Third benefit is that they are impressive: they are a great way to flex your data skills for your portfolio!)*
 
 ## Where we are going
 
@@ -73,13 +99,25 @@ The other thing dashboard is that they need your code to be run not just on your
 
 ::: {.notes}
 Poke around here a bit to clarify that this is what we will be able to do by the end of the lecture note
+
+Points to highlight:
+* There is an underlying dataset that the user does not see that is generating all of these graphics
+* Discussion question: what are the variables in this dataset?
+    * hour of pickup
+    * minute of pickup
+    * number of pickup
+    * Some kind of geography 
+* There must be code that generates the maps as well as the graph
+* Slider to select hour of pickup: equivalent to subsetting this dataset by hour of pickup
+* When user selects a value in the slider, in the background the dataset is being subsetted to another hour, and the maps and graphs are being re-generated based on that subset.
+* Side note: 3D graphs :( we are using this because this is a classic streamlit example
 :::
 
 ## Dashboards: Promises and Pitfalls
 
 When Professor Ganong worked in the Mayor's Office in Boston, the mayor asked for every single department to suggest metrics for a dashboard. The mayor put a TV in his office so that the dashboards would be displayed at all times.
 
-Discussion questions: 
+**Discussion questions**: 
 
 1. What are examples of data that a city would benefit from tracking with a dashboard?
 2. What are examples of data where putting it on a dashboard might inadvertently lead to poor management or create bad incentives for workers?
@@ -100,23 +138,29 @@ Number of cars towed. Not clear if we want this metric to be high or low, depend
 
 :::
 
-## Streamlit {style="font-size: 0.8em"}
+## `streamlit` {style="font-size: 0.8em"}
 
-Streamlit’s is designed for data scientists who want to share analyses without needing front-end development skills. Beyond being easy to use, we chose to teach Streamlit for a few reasons:
+We are teaching dashboards using `streamlit`. This is designed for data scientists who want to share analyses without needing front-end (e.g., web design) development skills. Beyond being easy to use, we chose to teach `streamlit` for a few reasons:
 
 1. Native to Python, works well with existing Python tools (e.g. Altair)
 1. All its features are free (so long as you are making public dashboards)
 1. Open source: [https://github.com/streamlit/streamlit](https://github.com/streamlit/streamlit)
 
-These lecture slides draw on examples and text from [https://docs.streamlit.io](https://docs.streamlit.io).
-
-Caveat: Streamlit is that it is best for prototyping (not computationally efficient for many users). We will talk more at the end of the lecture about how you will use streamlit and other tools going forward.
+Caveat: `streamlit` is for prototyping (not computationally efficient for many users). We will talk more at the end of the lecture about how you will use streamlit and other tools going forward.
 
 ::: {.notes}
 
 It is most useful for creating a prototype. If someone decides it is needs to be accessed by many users or needs to be built on top of secure data it will be replicated using a different dashboarding tool. This is very common. When professor Ganong worked at the city of Boston, everything that was going to be used on a continuing basis was transferred to another more stable platform. 
 
 :::
+
+
+## Citing our sources 
+* These lecture slides draw on examples and text from [https://docs.streamlit.io](https://docs.streamlit.io).
+* `streamlit` has fantastic documentation and [app gallery](https://streamlit.io/gallery)
+
+
+
 
 
 ## Introduction: summary
@@ -131,9 +175,11 @@ Review table of contents for the rest of lecture
 
 # Dashboards as websites
 
+## Prep 
 
-## My first dashboard 
-
+* Create a separate repo just for your dashboards. Ours is [https://github.com/uchicago-harris-dap/dashboards](https://github.com/uchicago-harris-dap/dashboards)
+* Be sure it is public.
+* Save code; we will call this `1/hello_world_1.py`
 ```{python}
 #| eval: false
 import streamlit as st
@@ -142,47 +188,47 @@ st.write("""
 Hello *world!*
 """)
 ```
+* Push  code
+
+::: {.notes}
+Syntax notes 
+* """...""" in Python creates a strong that can span multiple lines
+* `#` defines header text -- like in QMD
+* `*` defines italicized text 
+
+:::
+
+## My first dashboard 
 
 In this lecture: `$` means run at the terminal (on Macs the prefix is `%`). You do not need to type `$`.
 
-* `$ pip install streamlit`
-* `$ streamlit run 1/hello_world_1.py`
+```{bash}
+$ streamlit run 1/hello_world_1.py
+```
+
+* Recall: `Ctrl + C` to exit in Terminal 
 
 ::: {.notes}
-Re-review the table of contents
-
 We will start with the most simple possible dashboard. If you want to run this code, you can do just two steps first to install streamlit by running this first line of code at the terminal and then you run the script again at the command line. 
 
 :::
 
-<!-- MS to PG: a roadmap here would be really helpful. PG to MS do you mean for this section or for this lecture as a whole? I already had a speaker note at the very very beginning (on the first slide) saying to review the table of contents. But clearly that wasn't enough. I now added a note which says "re-review the table of contents". But maybe there's something else which doesn't correspond to either of these which would be more helpful? 
-
-MS to GGG: ah, I think I missed that there is supposed to be a table of contents slide that didn't render. Re-reviewing ToC at this point would still be helpful, though!-->
-
-
 ## My first dashboard -- two ways to display
-1. **Local** Create a server on your computer. Access from your web browser (and no one else's).
+1. **Local** Create a server on your computer. Access from your web browser (and no one else's). Like we did on prior slide.
 2. **Online** Create a server in the cloud. Access from any web browser.
 
-<!-- MS to GGG: I would add a note on 1 that says something like "this is what you just did on the last slide" -->
 
 ## My first dashboard -- putting it online
-* Prep -- [https://github.com/uchicago-harris-dap/dashboards](https://github.com/uchicago-harris-dap/dashboards)
-    * Create a separate repo just for your dashboards. 
-    * Be sure it is public.
-    * Push 
-<!-- MS to GGG: just tried deploying this and was successful (except 3/Hello.py)
-Some notes based on that:
-1. add a bullet here that you have to connect your github account to streamlit community cloud if it's your first time deploying something
-2. I'd also add a bullet here that you have to run `streamlit run [dashboardname].py` locally to get to the page with the Deploy Now button (unless I'm missing something, I think this is step 3 for deploying?)
-3. Discuss live that you deploy someone else's dashboard by cloning their (public) repo onto your own computer, running it locally, and then deploying from there. -->
-* Three clicks: Deploy ->  Deploy Now (under Streamlit Community Cloud) -> Deploy (with pre-filled repo, branch, and file names).
-* Workflow: Streamlit does **not** actually deploy the script which is stored on your computed. Instead, it reads the script which is pushed to a public repo and deploys that.
 
-[http://uchicago-harris-dap-dashboards-1.streamlit.app/](http://uchicago-harris-dap-dashboards-1.streamlit.app/)
+* *(one time only)* connect your github account to streamlit community cloud. [(here)](https://streamlit.io/cloud)
+* Three clicks: Deploy ->  Deploy Now (under Streamlit Community Cloud) -> Deploy (with pre-filled repo, branch, and file names).
+* Now your app is online and can be shared via link: [http://uchicago-harris-dap-dashboards-1.streamlit.app/](http://uchicago-harris-dap-dashboards-1.streamlit.app/)
+* Workflow: Streamlit does **not** actually deploy the script which is stored on your computer. Instead, it reads the script which is pushed to your public repo and deploys that.
+
 
 ::: {.notes}
 Comment for maggie: You might wonder how it is possible that we will be live-deploying the same script multiple times (once every class). The answer is that each time we are just over-writing the existing deployment.
+
 :::
 
 
@@ -191,7 +237,7 @@ Comment for maggie: You might wonder how it is possible that we will be live-dep
 * `$ streamlit run 2/hello_world_2_local.py` 
 * Uncomment `st.altair_chart(chart_to_show)`. Save. Show detection of file change.
     * Fun fact: streamlit will automatically figure out how to print various data types to the web so you also can instead just write `chart_to_show`. 
-* This is the normal workflow for building a streamlit dashboard. Update code. Save. Re-run in browser. Once you are happy, then you deploy.
+* This is the normal workflow for building a streamlit dashboard. Update code. Save. Re-run locally. Once you are happy, then you deploy.
 *  [http://uchicago-harris-dap-dashboards-2.streamlit.app/](http://uchicago-harris-dap-dashboards-2.streamlit.app/)
 
 ::: {.notes}
@@ -218,6 +264,7 @@ SCREEN: [http://uchicago-harris-dap-dashboards-2.streamlit.app/](http://uchicago
 
 Dashboard 3. Multipage. 
 
+Do-pair-share.
 
 Dashboard 4. Uber pickups. "Classic" streamlit dashboard.
 
@@ -231,26 +278,65 @@ Dashboard 4. Uber pickups. "Classic" streamlit dashboard.
 
 Preview [http://uchicago-harris-dap-dashboards-3b.streamlit.app/](http://uchicago-harris-dap-dashboards-3b.streamlit.app/)
 
+Going forward, we won't deploy locally anymore. But all the source code is located in the dashboards repo. For this one, you would deploy locally using `streamlit run 3/multipage.py`
+
 ## Dashboard 3 Homepage Review code {style="font-size: 0.8em"}
+* Review structure of page and `intro()`
+* *Lines 226-234*: created via `page_names_to_funcs` and `st.sidebar.selectbox(...)`
 
-* Review `intro()` function
-* Dropdown bar created via `st.sidebar.selectbox("Choose a demo", page_names_to_funcs.keys())`
-
+`3/multipage.py`: 
 {{< include snippet/multipage.qmd >}}
 
+::: {.notes}
+* Have app up on on side and the code on the other.
+* Scroll through and note that there are 4 functions -- intro(), mapping_demo(), plotting_demo(), and data_frame_demo(). 
+* Walk through intro() function. Point to all the "st." methods and what they align with in the dashboard
+* Scroll all the way down to where the dictionary page_names_to_funcs is defined. Point to the options in the dropdown menu.
+    * keys: strings shown to user
+    * values: function objects -- NOT function calls. intro as opposed to intro(), plotting_demo as opposed to plotting_demo(), etc.
+    * `page_names_to_funcs[demo_name]()` is doing a "function dispatch via a dictionary". Basically, it says, look up which function corresponds to this select page name, and then run that function.
 
+Equivalent to: 
+```{python}
+# | eval: false
+if demo_name == "Plotting Demo":
+    plotting_demo()
+elif demo_name == "Mapping Demo":
+    mapping_demo()
+elif demo_name == "DataFrame Demo":
+    data_frame_demo()
+else:
+    intro()
+``` 
+
+:::
 
 ## Feature: taking input
-* Streamlit has a huge number of different ways to take [input](https://docs.streamlit.io/develop/api-reference/widgets). In this lecture you will see
-    * `st.button()`
-    * `st.checkbox()`
-    * `st.slider()`
-    * `st.selectbox()`
+Streamlit has a huge number of different ways to take [input](https://docs.streamlit.io/develop/api-reference/widgets). In this lecture you will see:
 
-## Example 3 plotting demo  {style="font-size: 0.8em"}
-* Use `st` commands to set up page
-* Set up blank `progress_bar`, `status_text`, `chart` (writes Vega-Lite for us)
-* Loop to generate random numbers
+* `st.button()`
+* `st.checkbox()`
+* `st.slider()`
+* `st.selectbox()`
+
+## Feature: layouts and containers
+Streamlit also has many [layouts and containers](https://docs.streamlit.io/develop/api-reference/layout). In this lecture you will see:
+
+* `st.sidebar()`
+* `st.columns()`
+
+
+## Feature: showing progress
+Streamlit also has ways to show progress and failure [page](https://docs.streamlit.io/develop/api-reference/status). In this lecture you will see:
+
+* `st.progress()`
+* `st.error()`
+
+
+## `plotting_demo()`  {style="font-size: 0.9em"}
+* *Lines 6-13*: use `st.` commands to set up page
+* *Lines 15-18*: set up blank `progress_bar`, `status_text`, `chart` in sidebar
+* *Lines 20-28*: (usual python) loop to generate random numbers
 
 {{< include snippet/1_📈_Plotting_Demo.qmd >}}
 
@@ -274,13 +360,22 @@ get_UN_data()
 ```
 
 ## DataFrame demo review code {style="font-size: 0.8em"}
-* Choose inputs `countries = st.multiselect()`
-* Print table using `st.write()`
-* `melt` for `chart` 
+* *Lines 25-27*: choose inputs `countries = st.multiselect()`
+* *Line 36*: print table using `st.write()`
+* *Line 41-43*: `pd.melt` in prepartion for `chart` 
 
+`data_frame_demo()` from `3/multipage.py`: 
 {{< include snippet/3_📊_DataFrame_Demo.qmd >}}
 
-## Feature:  `st.write()`
+## Feature: showing output
+
+_for text_
+
+`st.markdown()`
+
+_for anything_
+
+`st.write()`
 
 *  In this example, `st.write()` is used to make a table (analogous to `print()` or `head()`)
 * Useful tip: `st.write()` is Streamlit's "Swiss Army knife". Pass almost anything: latex, Matplotlib figures, Altair charts, multiple arguments, and more. Don't worry, Streamlit will figure it out and render things the right way. Full list [here](https://docs.streamlit.io/develop/api-reference/write-magic/st.write)
@@ -290,7 +385,9 @@ get_UN_data()
 
 ## Mapping demo data preview {style="font-size: 0.8em"}
 
-Runs on [`pydeck`](https://deckgl.readthedocs.io/en/latest/) ("High-scale spatial rendering"). Makes gorgeous maps (will revisit). In Terminal/command line: `$ pip install pydeck`
+* Runs on [`pydeck`](https://deckgl.readthedocs.io/en/latest/) ("High-scale spatial rendering"). 
+* Makes gorgeous maps (will have more depth in minilesson). 
+* In Terminal/command line: update conda environment or `$ pip install pydeck`
 
 | data preview  | 
 | --- | 
@@ -303,13 +400,14 @@ Runs on [`pydeck`](https://deckgl.readthedocs.io/en/latest/) ("High-scale spatia
 
 Review `HexagonLayer`, `ScatterplotLayer`, `TextLayer`, `ArcLayer`
 
+`mapping_demo()` from `3/multipage.py`: 
 {{< include snippet/2_🌍_Mapping_Demo.qmd >}}
 
 ## (Optional) Summarize how each dataset is used {style="font-size: 0.8em"}
 
 |  Data preview  | Layer name | notes |
 | --- | --- | --- |
-| [bike_rental_stats](http://raw.githubusercontent.com/streamlit/example-data/master/hello/v1/bike_rental_stats.json) | `HexagonLayer`  |  bar height set by number of rental at each lat lon |
+| [bike_rental_stats](http://raw.githubusercontent.com/streamlit/example-data/master/hello/v1/bike_rental_stats.json) | `HexagonLayer`  |  bar height set by number of rentals at each lat lon |
 | [bart_stop_stats](http://raw.githubusercontent.com/streamlit/example-data/master/hello/v1/bart_stop_stats.json) | `ScatterplotLayer` | radius = `exits`|
 | [bart_stop_stats](http://raw.githubusercontent.com/streamlit/example-data/master/hello/v1/bart_stop_stats.json) | `TextLayer`   | `get_text="name"` |
 | [bart_path_stats](http://raw.githubusercontent.com/streamlit/example-data/master/hello/v1/bart_path_stats.json) | `ArcLayer` |  arcs via `get_source_position = ["lon", "lat"], get_target_position = ["lon2", "lat2"]` |
@@ -318,6 +416,33 @@ Review `HexagonLayer`, `ScatterplotLayer`, `TextLayer`, `ArcLayer`
 ::: {.notes}
 Not sure we will need to talk about this. only cover it if people are confused from looking at the code itself.
 :::
+
+
+## Control flow: what code exactly does streamlit run?
+
+Streamlit tries to run your code like a normal python script.
+
+If you write a function and never call it, it is not run. To understand what's run here, the key code block is this
+
+```{.python}
+page_names_to_funcs = {
+    "—": intro,
+    "Plotting Demo": plotting_demo,
+    "Mapping Demo": mapping_demo,
+    "DataFrame Demo": data_frame_demo
+}
+
+demo_name = st.sidebar.selectbox("Choose a demo", page_names_to_funcs.keys())
+page_names_to_funcs[demo_name]()
+```
+
+## do-pair-share {background-color="aliceblue"}
+
+1. Render dashboard code in student repo (`student30538-w26/lectures/dashboard/app_dps_1.py`) at the command line/Terminal: `$ streamlit run app_dps_1.py`
+2. Edit `.py` so that user can select multiple items instead of just one: display Bus routes, L routes, or both in sidebar
+3. Re-render
+
+*Hint: browse through documentation for [input options](https://docs.streamlit.io/develop/api-reference/widgets) *
 
 ## Uber pickups: a full-fledged dashboard 
 
@@ -359,11 +484,12 @@ load_data()
 ```
 
 ## Uber pickups review code {style="font-size: 0.7em"}
-* User chooses time of day (`pickup_hour`) -- line 115
-* Helper function `filterdata(data, hour_selected)` -- line 69
-* `map(data, lat, lon, zoom)` makes a PyDeck `HexagonLayer` (line 41). Repeat 4x (lines 140-157).
-* `histdata(df, hr)` makes an altair histogram with n rides -- lines 170-182
+* *Lines 115-19*: user chooses time of day (`pickup_hour`)
+* *Lines 69-70*: helper function `filterdata(data, hour_selected)` 
+* *Lines 41, 140-157*: `map(data, lat, lon, zoom)` makes a PyDeck `HexagonLayer`. Repeat 4x.
+* *Lines 170-182*: `histdata(df, hr)` makes an altair histogram with n rides
 
+`4/uber_pickups.py`: 
 {{< include snippet/uber_pickups.qmd >}}
 
 ::: {.notes}
@@ -373,15 +499,6 @@ Answer: this is saying where we should be looking when the map is first created
 Show that if you zoom out on the three airports you get back to the exact same underlying dataset, it's just starting in a different place.
 
 :::
-
-<!-- MS to PG: at this point I started to get pretty confused :( I don't understand what st.session_state means. 
-
-I see you define it later under "What is a session"
-
-PG to MS reformatted it to just say pickup hour without mentioning session state -->
-
-
-
 
 ## Summary
 
@@ -399,78 +516,122 @@ Saw four dashboards
 ## Roadmap
 * Why dashboards are different than `.py` (or notebooks or `qmd`)
 * Bare vs streamlit mode
-* toy example of what streamlit mode can do
-* What is a session?
+* Two ways to 'save' across re-runs of your dashboard
+    * Session state
+    * Caching
 
 
-## Why dashboards are different than `.py` {style="font-size: 0.8em"}
+## Why dashboards are different than `.py` 
 
-The first section of this lecture treated dashboards as websites without user input. This is like a normal Python script. Run once and gives you output.
+* The first section of this lecture treated dashboards as websites without user input. This is like a normal Python script. Run once and gives you output.
 
-The second section made dashboards interactive. To do this, it must be the case that the entire dashboard, or some part of it, may be run more than once.
+* The second section made dashboards interactive. To do this, it must be the case that the entire dashboard, or some part of it, may be run more than once.
 
+<!-- 
 - In Terminal/command line: `$ pip install watchdog`
 
-`watchdog` is the file-watching library Streamlit leans on to detect code/data changes (like when we got the option to "re-run" with dashboard 2)
+`watchdog` is the file-watching library Streamlit leans on to detect code/data changes (like when we got the option to "re-run" with dashboard 2) 
+-->
 
 ## Bare mode vs streamlit mode {style="font-size: 0.8em"}
 
 * "Bare mode" (`$ python app.py`) runs your script like standard Python; output is just whatever the script prints. 
-* "Streamlit mode" (`$ python -m streamlit run app.py` or for short `$ streamlit run app.py`) does four things:
+* "Streamlit mode" (`$ streamlit run app.py`) does four things:
     * sets up a server to run your script
-    * records the state (e.g. the choice in `st.selectbox`)
-    * reruns code on state changes (e.g. new choice in in `st.selectbox`)
+    * records the **state** (e.g. the choice in `st.selectbox`)
+    * reruns code when it detects state changes (e.g. new choice in in `st.selectbox`)
     * serves the interactive user interface (UI) found in the browser
-* There's a lot of extra code under the hood, streamlit's goal is for you to focus on the Python code (and ignore all the running a server, taking user input, designing a nice webpage)
+* There's a lot of extra code under the hood. streamlit's goal is for you to focus on the Python code (and ignore all the running a server, taking user input, designing a nice webpage)
+
+## Session states and caching: motivation
+* One problem with streamlit mode: every time state changes, it will re-run your script from the top
+* Say your dashboard has 2 selection box options:
+    * User selects A: calculate A and plot it
+    * User selects B: calculate B and plot it
+* Every time the user switches between the selection to plot A and B, `streamlit` will re-run the calculations for A and B
+
+## Saving across re-runs {style="font-size: 0.8em"}
+* To make this more efficient, we can have `streamlit` do something once and 'save' it for re-runs
+* Streamlit offers two alternate ways to do this:
+    * Session states
+    * Caching
+* Session state is conceptually easier to understand -- will explain this first to build intuition
+* But caching is more commonly used but less transparent -- will explain this in next section
+* *Note: there are also subtle difference in uses between session states and caching that we won't cover in depth in this class.*
+
+## Session state {style="font-size: 0.8em"}
+
+* A **session** is a single instance of viewing an app
+* Session State provides a dictionary-like interface where you can preserve info between script reruns within a session. 
+* Use `st.session_state` with dictionary notation to store and recall values. For example, `st.session_state.my_key`. 
+    * If a user refreshes their browser page or reloads the URL to the app, their Session State resets and they begin again with a new session.
+    * Multiple users = multiple sessions 
 
 
-## Simple re-run demo overview {style="font-size: 0.8em"}
+
+
+## Session state demo overview {style="font-size: 0.8em"}
 
 [http://uchicago-harris-dap-dashboards-5.streamlit.app/](http://uchicago-harris-dap-dashboards-5.streamlit.app/)
 
 * `$ streamlit run 5/session_state_example.py`
 * User chooses `route = st.selectbox("CTA Route", ...)` and `cut_pct = st.slider("What fraction of service to cut?", ...)`
-* Computer then runs a computation which takes 3 seconds (on the pset, you will see an example where it takes much longer than 3 seconds)
+* Dashboard then runs a computation which takes 3 seconds (on the pset, you will see an example where it takes much longer than 3 seconds)
 * Returns a result
 * What if we want to run the exact same computation twice? Better to use the saved result!
 
-<!-- MS to GGG: in the session_state_example.py code, I would add "min_value=  0.0, max_value = 50.0, value= 10.0 to line 10 so that students can reference it as an example to work off of for the do-pair-share -->
-## Simple re-run demo review code
-
+## Session state demo review code {style="font-size: 0.8em"}
+* Lines 9-10: users selects line to cut and percentage cut 
+* Lines 12-16: record number of calculations done and define key for calculations
+* Lines 19-23: If calculation has not been run before, run it and save in `st.session_state`. Add to counter.
 
 {{< include snippet/session_state_example.qmd >}}
 
-<!-- MS to GGG: can you add a "roadmap" to reviewing this code, similar to what you had above?  -->
-## What is a session? {style="font-size: 0.8em"}
 
-* A session is a single instance of viewing an app. 
-* Multiple users = multiple sessions. 
-* If the user refreshes their browser page or reloads the URL to the app, their Session State resets and they begin again with a new session.
-* Session State provides a dictionary-like interface where you can preserve info between script reruns. Use `st.session_state` with key or attribute notation to store and recall values. For example, `st.session_state.my_key`. 
+## Summary
 
-## summary
-
-* dashboards expect to be run more than once
-* bare mode lets you test running just once
-* when you run slow code, save the output
-* each browser tab is a session
+* Dashboards expect to be run more than once
+<!-- * bare mode lets you test running just once -->
+* When you run slow code, want to run it once within a session and save the output
+* `st.session_state` is one way to do this
 
 
-# decorators and `@cache_data`
+# Decorators and `@st.cache_data`
 
-## roadmap
+## Roadmap
 
-* decorator examples
-    * timer 
-    * crs for spatial joins
-    * `@cache_data`
+* Decorator examples
+    * Non-`streamlit`: timer 
+    * Non-`streamlit`: check crs for spatial joins
+    * `@st.cache_data`
 * revisit toy example from last section
 * real-life example
 
+## Decorators {style="font-size: 0.8em"}
+* A second way to save values across states is to use a `@st.cache_data` **decorator**
+* Before we describe `@st.cache_data`, we'll cover decorators in general
+* A decorator is a wrapper that takes another function as input and returns a modified version of that function
+* Decorators let you add behavior without changing the original function's code
+    * *When would you want to do this?* If you want to apply same cross-cutting behavior across multiple functions without duplicating code 
 
-## Timing pandas data processing
+Syntax: 
+```{python}
+#| echo : true
+#| eval: false
+@decorator_name
+def myfunction():
+```
+
+is equivalent to `myfunction = decorator_name(myfunction)`
+
+## Decorator example 1: timing pandas data processing {style="font-size: 0.8em"}
+
+* Lines 3-11: define `@timer` decorator: times function and prints time
+* Lines 13-15: apply `@timer` to `summarize(df)`
 
 ```{python}
+#| eval: false
+#| echo: true
 import pandas as pd, time
 
 def timer(func):
@@ -492,9 +653,34 @@ summary = summarize(df)
 summary
 ```
 
-<!-- MS to GGG: we should mention live that decorators are not a dashboard-only tool! As demonstrated by this slide's example and the next slide. And that we can write our own decorators, or use ones that come with a package (st.cache_data is the latter).-->
+## Decorator example 1: timing pandas data processing
+```{python}
+#| eval: true
+#| echo: false
+import pandas as pd, time
 
-## Ensure CRS for GeoPandas joins
+def timer(func):
+    """Decorator that prints runtime."""
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = func(*args, **kwargs)
+        end = time.time()
+        print(f"{func.__name__} took {end - start:.3f} s")
+        return result
+    return wrapper
+
+@timer
+def summarize(df):
+    return df.groupby("city")["value"].mean()
+
+df = pd.DataFrame({"city": ["SF","NYC","LA","Chicago"]*3, "value": range(12)})
+summary = summarize(df)
+summary
+```
+
+## Decorator example 2: ensure CRS for GeoPandas joins  {style="font-size: 0.8em"}
+
+* Line 5: need to define extra `decorator()` layer to capture the decorator's argument ("EPSG:4326")
 
 ```{python}
 #| eval: false
@@ -517,9 +703,14 @@ def spatial_join(gdf1, gdf2):
     return gpd.sjoin(gdf1, gdf2, how="inner")
 ```
 
+## `@st.cache_data` decorator {style="font-size: 0.8em"}
+* `@st.cache_data` is another (albeit much more complicated) decorator included in `streamlit`
+* `@st.cache_data` saves the result of the function the *first time* it runs
+    * If first time run: `@st.cache_data` runs the function and saves result to memory
+    * If run before: `@st.cache_data` returns the previously saved result instead of re-running
+* `@st.cache_data` trades off memory for speed
 
-
-## Automate toy example via cache-ing
+## How cacheing works {style="font-size: 0.8em"}
 ```{python}
 #| eval: false
 @st.cache_data
@@ -527,11 +718,15 @@ def long_running_function(param1, param2):
     return …
 ```
 
-1. When user first calls `long_running_function(p1, p2)` for the first time, `@st.cache_data` makes a note of `p1, p2`. It stores the return value in a cache.
+1. When user first calls `long_running_function(p1, p2)` for the first time, `@st.cache_data` makes a note of `p1, p2`. It stores the return value in cache
 2. If the next call is `long_running_function(q1, q2)`, it also stores this in the cache.
-3. (time-saving) If the next call is `long_running_function(p1, p2)`, instead of running any code, it just returns the saved value from the cache.
+3. *(time-saving)* If the next call is `long_running_function(p1, p2)`, instead of running the code inside `long_running_function()`, it just returns the saved value from step 1
 
-## cache data in streamlit
+
+
+## Automate toy example via caching
+
+`6/session_state_cache.qmd`:
 
 {{< include snippet/session_state_cache.qmd >}}
 
@@ -546,17 +741,29 @@ We have decorated `@st.cache_data` for four different functions
 3. `mpoint()`
 4. `histdata()`
 
+## Revisit a real example: `4/uber_pickups.py`
+{{< include snippet/uber_pickups.qmd >}}
 
-## Summary: What all decorators have in common {style="font-size: 0.8em"}
+## do-pair-share {background-color="aliceblue"}
 
-* All wrap a function with extra behavior. 
-* They take a function as input and return a modified version.
-* Create them when you know you will use an **already-written** function more than once
-* Syntax: `@decorator` above a function definition.
+1. Run `$ streamlit run app_dps_2.py`
+2. Edit the script to use `@st.cache_data` decorator on `compute_passengers()`
+3. Record the change in speed
+
+
+
+## Summary: decorators and `@st.cache_data` {style="font-size: 0.7em"}
+
+* Decorators
+    * Wrap a function with extra behavior and return a modified version of function
+    * Create them when you want to extend many functions in the same way
+    * Syntax: `@decorator` above a function definition.
+    * Decorators are not a dashboard-only tool! We can write our own decorators, or use ones that come with a package (`st.cache_data` is the latter).
 * Examples
     * Timing and logging (`@timer`)
 	* Validation or transformation (`@ensure_crs(crs)`)
 	* Caching (`@st.cache_data`)
+* `@st.cache_data` is a decorator that can be used similarly to `st.session_state`
 
 # Streamlit and other types of dashboards {style="font-size: 0.8em"}
 
@@ -576,11 +783,14 @@ We have decorated `@st.cache_data` for four different functions
 * Chat box / LLM wrapper
 * Draw on external data (user uploaded, from a live database, etc.)
 
-## How should you use streamlit for the final project (and in life)? 
+## How should you use `streamlit` for the final project (and in life)?  {style="font-size: 0.7em"}
 * Build a dashboard when a static figure or table will not suffice
 * This occurs when there is too much information to fit on a single figure or table (e.g. one dashboard is better than ten figures)
 * The goal, however, is not to proliferate information (e.g. "how can I imagine ten figures so that then I can shoehorn them into dashboard?"). 
 * Instead, it is to develop a set of information that a reader or decision-maker would want to interact with.
+* This interactivity should be *meaningful*: should approximate the "exploration mode" loop we outlined last lecture.
+    * Example: user selection changes input data for a plot or parameters to a calculation 
+    * Counterexample: your dashboard allows user to switch between 2 pre-made static plots
 
 ## Streamlit and other dashboarding tools {style="font-size: 0.8em"}
 
@@ -590,12 +800,10 @@ What software might you see elsewhere? Microsoft Power BI, tableau, Qlik, Looker
 
 What dashboard should you use? This is not an important choice. Use whatever your organization or collaborators are already using. Or prototype in streamlit and then port.
 
-What if a job you apply for requires a specific dashboarding software? Spend a few hours teaching it to yourself and then put it on your resume (do **not** just put it on your resume). Or put dashbaords in general and learn the skill for the interview.
+What if a job you apply for requires a specific dashboarding software? Spend a few hours teaching it to yourself and then put it on your resume (do **not** just put it on your resume). Or put dashboards in general and learn the skill for the interview.
 
 ## The most famous dashboard ever  {style="font-size: 0.8em"}
-New York City Police Department's "CompStat" in the 1990's. Why is it such a perfect application of a dashboard? (Source: *Classic book: Bob Behn's The PerformanceStat Potential*)
-
-<!-- MS to GGG: add link/illustrative screenshot? -->
+New York City Police Department's "CompStat" in the 1990's ([link](https://compstat.nypdonline.org/)). Why is it such a perfect application of a dashboard? (Source: *Classic book: Bob Behn's [The PerformanceStat Potential](https://www.brookings.edu/books/the-performancestat-potential/)*)
 
 <!-- note to self: I skipped 4 and 7 since I didn't think they make a lot of sense-->
 1. Metrics (arrests, crime rate) are clearly aligned with institutional goals
@@ -612,7 +820,7 @@ Very few other parts of government can meet all seven of these criteria
 
 Even under these perfect conditions, the dashboard was not very successful. In a survey of 1800 retired NYC police officers of the question “are you confident that major crimes have declined by 80% in New York since 1990s?” more than half said no (Eterno, Verma, and Silverman 2014). Respondents also talked about pressure to change reports to make crime look better.
 
-The key idea is that "what gets measured gets managed". Once a manger focuses on a metric, that metric becomes less useful or informative than it was before.
+The key idea is that "what gets measured gets managed". Once a manager focuses on a metric, that metric becomes less useful or informative than it was before.
 
 
 ## Conclusion of section
@@ -623,13 +831,8 @@ The key idea is that "what gets measured gets managed". Once a manger focuses on
 * In spite of these downsides, dashboards continue to grow in popularity
 
 
-## Do-pair-share stub
 
-`$ streamlit run world_map.py`
-
-Plot agricultural production on a map of the world
-Will ask students to set up a slider to choose the year
-
+# Backup slides
 ## Backup: Altair troubleshooting 
 
 * It is possible to have Altair installed (as captured by `pip show altair`) but also have `import altair` fail on mac with a chip architecture error: `have 'x86_64', need 'arm64e' or 'arm64')`
@@ -652,10 +855,3 @@ Solution Find your Python’s “Install Certificates.command” in Finder:
 1. Open /Applications.
 2. Enter the folder for your Python (for example Python 3.11).
 3. Double-click Install Certificates.command.
-
-
-<!--
-
-## do-pair-share
-$ pip install streamlit watchdog
--->
